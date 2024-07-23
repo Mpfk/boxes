@@ -1,6 +1,6 @@
-## AWS Amplify Vue.js Starter Template
+# Boxes 📦
 
-This repository provides a starter template for creating applications using Vue.js and AWS Amplify, emphasizing easy setup for authentication, API, and database capabilities.
+Boxes is a web app that helps you organize boxes and their contents. Keep track of items as you put them in the box, and generate QR labels to help you find things later.
 
 ## Overview
 

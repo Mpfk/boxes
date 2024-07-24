@@ -14,8 +14,12 @@ function listBoxes() {
   }); 
 }
 function createBox() {
+  const boxName = window.prompt("Box Name");
+  const boxID = Math.random().toString(36).substring(2, 8); // Generate a random 6-character string
+
   client.models.Boxes.create({
-    boxID: window.prompt("Box Name")
+    boxID: boxID,
+    boxName: boxName // Assign the prompted value to boxName attribute
   }).then(() => {
     // After creating a new box, update the list of boxes
     listBoxes();

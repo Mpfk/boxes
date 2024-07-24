@@ -9,6 +9,7 @@ const schema = a.schema({
   Boxes: a
     .model({
       boxID: a.string(),
+      boxName: a.string(),
     })
     .authorization((allow) => [allow.publicApiKey()]),
 });

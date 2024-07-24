@@ -11,7 +11,8 @@ const schema = a.schema({
       boxID: a.id().required(),
       boxName: a.string(),
     })
-    .authorization((allow) => [allow.publicApiKey()]),
+    .identifier(['boxID'])
+    .authorization((allow) => [allow.publicApiKey()])
 });
 
 export type Schema = ClientSchema<typeof schema>;

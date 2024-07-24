@@ -8,7 +8,7 @@ can "create", "read", "update", and "delete" any "Boxes" records.
 const schema = a.schema({
   Boxes: a
     .model({
-      boxID: a.string(),
+      boxID: a.id().required(),
       boxName: a.string(),
     })
     .authorization((allow) => [allow.publicApiKey()]),

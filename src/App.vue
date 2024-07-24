@@ -8,10 +8,9 @@ import Boxes from './components/Boxes.vue'
   <main>
     <authenticator>
       <template v-slot="{ signOut }">
-        <Boxes />
+        <router-view></router-view>
         <button @click="signOut">Sign Out</button>
       </template>
     </authenticator>
   </main>
 </template>
-./components/Boxes.vue

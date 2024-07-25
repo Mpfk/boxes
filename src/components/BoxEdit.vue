@@ -87,6 +87,43 @@
     }
   }
 
+  async function emptyBox() {
+    // Show a confirmation dialog before emptying the box
+    if (!confirm(`Are you sure you want to empty this box? It's contents will be deleted.`)) {
+      return;
+    } else {
+      try {
+        console.log('Emptying box with items:', items.value); // Log items being deleted
+        for (const item of items.value) {
+          await client.models.Boxes.delete({ boxID: item.boxID, itemID: item.itemID });
+          console.log(`Deleted item: ${item.itemID}`);
+        }
+        items.value = [];
+        itemCount.value = 0;
+        console.log('Box emptied successfully');
+      } catch (error) {
+        console.error('Error emptying box', error);
+      }
+    }
+  }
+
+  async function deleteBox() {
+    if (items.value.length > 0) {
+      console.error('Cannot delete box. Items still present in the box.');
+      return;
+    }
+    if (boxData.value) {
+      try {
+        console.log('Deleting box:', boxData.value); // Log data being deleted
+        await client.models.Boxes.delete({ boxID: boxData.value.boxID, itemID: 'box_root' });
+        console.log('Box deleted successfully');
+        router.push('/');
+      } catch (error) {
+        console.error('Error deleting box', error);
+      }
+    }
+  }  
+
   function goBack() {
     router.push(`/box/${boxID.value}`);
   }
@@ -99,8 +136,8 @@
     <BoxForm :key="formKey" :boxName="boxData?.boxName ?? ''" :location="boxData?.location ?? ''" @update="handleInputChanged" @inputChanged="handleInputChanged" />
     <div class="control-group">
       <button v-if="!formChanged" @click="goBack">🔙 Back</button>
-      <button v-if="!formChanged && itemCount > 0" @click="">❌ Empty Box</button>
-      <button v-if="!formChanged && itemCount === 0" @click="">♻️ Delete Box</button>
+      <button v-if="!formChanged && itemCount > 0" @click="emptyBox">❌ Empty Box</button>
+      <button v-if="!formChanged && itemCount === 0" @click="deleteBox">♻️ Delete Box</button>
       
       <button v-if="formChanged" @click="discardChanges">⌫ Discard Changes</button>
       <button v-if="formChanged" @click="saveChanges">💾 Save Changes</button>

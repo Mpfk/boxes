@@ -9,13 +9,13 @@
   // Vars
   const client = generateClient<Schema>();
   const router = useRouter();
-  const boxes = ref<Array<Schema['Boxes']["type"]>>([]);
+  const list = ref<Array<Schema['Boxes']["type"]>>([]);
 
   // Functions
   function listBoxes() {
-    client.models.Boxes.observeQuery().subscribe({
+    client.models.Boxes.observeQuery({ filter: { itemID: { eq: 'box_root' } } }).subscribe({
       next: ({ items, isSynced }) => {
-        boxes.value = items
+        list.value = items
       },
     }); 
   }
@@ -26,6 +26,7 @@
 
     client.models.Boxes.create({
       boxID: boxID,
+      itemID: 'box_root',
       boxName: boxName // Assign the prompted value to boxName attribute
     }).then(() => {
       // After creating a new box, update the list of boxes
@@ -49,15 +50,15 @@
 
 <template>
   <main>
-    <h1>📦 Your Boxes</h1>
+    <h1>📦 Boxes</h1>
     <button @click="createBox">+ New Box</button>
     <ul>
       <li 
-        v-for="box in boxes" 
+        v-for="box in list" 
         :key="box.boxID"
         @click="box.boxID ? navigateToBox(box.boxID) : null"
         >
-        {{ box.boxID }}
+        {{ box.boxName }}
       </li>
     </ul>
   </main>

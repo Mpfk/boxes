@@ -9,9 +9,12 @@ const schema = a.schema({
   Boxes: a
     .model({
       boxID: a.id().required(),
+      itemID: a.string().required(),
       boxName: a.string(),
+      itemName: a.string(),
+      location: a.string(),
     })
-    .identifier(['boxID'])
+    .identifier(['boxID', 'itemID'])
     .authorization((allow) => [allow.publicApiKey()])
 });
 

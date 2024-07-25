@@ -1,49 +1,55 @@
 <script setup lang="ts">
-    // Imports
-    import { defineEmits, defineProps, ref, watch } from 'vue';
+  import { defineEmits, defineProps, ref, watch } from 'vue';
 
-    // Props
-    const props = defineProps({
-        boxName: String,
-        location: String,
-    });
+  // Props
+  const props = defineProps({
+    boxName: String,
+    location: String,
+  });
 
-    // Vars
-    const emit = defineEmits(['update', 'inputChanged']);
-    const boxName = ref(props.boxName || '');
-    const location = ref(props.location || '');
+  // Emits
+  const emit = defineEmits(['update', 'updateLocation', 'inputChanged']);
 
-    // Watch for prop changes to update local state
-    watch(() => props.boxName, (newVal) => {
-        boxName.value = newVal || '';
-    });
+  // Vars
+  const boxName = ref(props.boxName || '');
+  const location = ref(props.location || '');
 
-    watch(() => props.location, (newVal) => {
-        location.value = newVal || '';
-    });
-
-    // Functions
-    function submitForm() {
-        emit('update', { boxName: boxName.value, location: location.value });
+  watch(() => props.boxName, (newVal) => {
+    if (newVal !== boxName.value) {
+      boxName.value = newVal || '';
     }
+  });
 
-    function handleInput() {
-        emit('inputChanged', { boxName: boxName.value, location: location.value });
+  watch(() => props.location, (newVal) => {
+    if (newVal !== location.value) {
+      location.value = newVal || '';
     }
+  });
+
+  function updateBoxName() {
+    emit('update', boxName.value);
+    emit('inputChanged', { boxName: boxName.value, location: location.value });
+  }
+
+  function updateLocation() {
+    emit('updateLocation', location.value);
+    emit('inputChanged', { boxName: boxName.value, location: location.value });
+  }
 </script>
 
 <template>
-  <form @submit.prevent="submitForm">
+  <form>
     <div>
       <label for="boxName">Box Name:</label>
-      <input id="boxName" v-model="boxName" @input="handleInput" type="text" required />
+      <input id="boxName" v-model="boxName" @input="updateBoxName" type="text" required />
     </div>
     <div>
       <label for="location">Location:</label>
-      <input id="location" v-model="location" @input="handleInput" type="text" required />
+      <input id="location" v-model="location" @input="updateLocation" type="text" required />
     </div>
   </form>
 </template>
 
 <style scoped>
+/* Add any required styles here */
 </style>

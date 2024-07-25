@@ -1,6 +1,6 @@
 <script setup lang="ts">
   // Imports
-  import { onMounted, ref } from 'vue';
+  import { onMounted, ref, watch } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
   import { generateClient } from 'aws-amplify/data';
   import type { Schema } from '../../amplify/data/resource';
@@ -144,3 +144,7 @@
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Add any required styles here */
+</style>

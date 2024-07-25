@@ -36,19 +36,12 @@
     router.push(`/box/${route.params.boxID}/edit`);
   }
 
-  function addItem() {
-    const itemName = window.prompt("Item Name");
-    const itemID = Math.random().toString(36).substring(2, 8); // Generate a random 6-character string
+  function addItems() {
+    router.push(`/box/${route.params.boxID}/fill`);
+  }
 
-    client.models.Boxes.create({
-      //boxID: `${boxID}#${itemID}`,
-      boxID: boxID.value,
-      itemID: itemID,
-      itemName: itemName,
-    }).then(() => {
-      console.log('Item added' + itemName + itemID);
-      listContents();
-    });
+  function editItem(itemID: string) {
+    router.push(`/box/${boxID.value}/item/${itemID}/edit`);
   }
 
   function listContents() {
@@ -72,17 +65,17 @@
     <h4>Contents:</h4>
     <ul>
       <li 
-        v-for="box in list" 
-        :key="box.boxID"
-        @click="box.boxID ? returnHome() : null"
-        >
-        {{ box.itemName }}
+        v-for="item in list" 
+        :key="item.itemID"
+        @click="editItem(item.itemID)"
+      >
+        {{ item.itemName }}
       </li>
     </ul>
 
 
     <button @click="returnHome">🔙 Return Home</button>
-    <button @click="addItem">📥 Add Items</button>
+    <button @click="addItems">📥 Add Items</button>
     <button @click="returnHome">☑️ Select Multiple</button>
   </div>
 </template>

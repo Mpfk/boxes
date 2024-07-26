@@ -1,6 +1,6 @@
 <script setup lang="ts">
   // Imports
-  import { onMounted, ref, watch } from 'vue';
+  import { onMounted, ref, watch, inject } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
   import { generateClient } from 'aws-amplify/data';
   import type { Schema } from '../../amplify/data/resource';
@@ -28,6 +28,8 @@
   const itemCount = ref(0);
   const formChanged = ref(false);
   const formKey = ref(0); // Key to force re-render of BoxForm
+  const setHotBarButtons = inject('setHotBarButtons');
+  const addToast = inject('addToast');
 
   // Functions
   onMounted(async () => {
@@ -40,6 +42,17 @@
           boxData.value = rootItem;
           originalData.value = { ...rootItem }; // Store original data
           itemCount.value = items.value.length;
+          if (itemCount.value === 0) {
+            setHotBarButtons([
+              { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack},
+              { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: deleteBox}
+            ]);
+          } else {
+            setHotBarButtons([
+              { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack},
+              { icon: 'X', description: 'Empty', buttonClass: 'btn-danger', onClick: emptyBox}
+            ]);
+          }
         } else {
           console.error('Box root item not found');
           router.push('/404');
@@ -57,6 +70,10 @@
       boxData.value.boxName = data.boxName;
       boxData.value.location = data.location;
       formChanged.value = true;
+      setHotBarButtons([
+        { icon: '⌫', description: 'Cancel', buttonClass: 'btn-warning', onClick: discardChanges},
+        { icon: '✓', description: 'Update', buttonClass: 'btn-success', onClick: saveChanges}
+      ]);
     }
   }
 
@@ -65,6 +82,17 @@
       boxData.value = { ...originalData.value };
       formKey.value++; // Increment key to force re-render of BoxForm
       formChanged.value = false;
+      if (itemCount.value === 0) {
+        setHotBarButtons([
+          { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack},
+          { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: deleteBox}
+        ]);
+      } else {
+        setHotBarButtons([
+          { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack},
+          { icon: 'X', description: 'Empty', buttonClass: 'btn-danger', onClick: emptyBox}
+        ]);
+      }
     }
   }
 
@@ -79,6 +107,10 @@
           location: boxData.value.location
         });
         console.log('Changes saved successfully');
+        addToast({
+          message: 'Box updated successfully!',
+          bgClass: 'text-bg-success',
+        });
         formChanged.value = false;
         originalData.value = { ...boxData.value }; // Update original data
       } catch (error) {
@@ -101,6 +133,14 @@
         items.value = [];
         itemCount.value = 0;
         console.log('Box emptied successfully');
+        addToast({
+          message: 'Box emptied successfully!',
+          bgClass: 'text-bg-success',
+        });
+        setHotBarButtons([
+          { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack},
+          { icon: 'X', description: 'Empty', buttonClass: 'btn-danger', onClick: emptyBox}
+        ]);
       } catch (error) {
         console.error('Error emptying box', error);
       }
@@ -117,9 +157,17 @@
         console.log('Deleting box:', boxData.value); // Log data being deleted
         await client.models.Boxes.delete({ boxID: boxData.value.boxID, itemID: 'box_root' });
         console.log('Box deleted successfully');
+        addToast({
+          message: 'Box deleted successfully!',
+          bgClass: 'text-bg-success',
+        });
         router.push('/');
       } catch (error) {
         console.error('Error deleting box', error);
+        addToast({
+          message: 'Error deleting box. Please reload and try again.',
+          bgClass: 'text-bg-danger',
+        });
       }
     }
   }  
@@ -131,17 +179,8 @@
 
 <template>
   <div>
-    <h1>📝 Edit Box</h1>
-    <!-- Details Component Here (Name Field, Location Field) -->
+    <div class="mt-5 mb-3 text-center fw-bold fs-3">Edit <code>{{ boxData?.boxName }}</code> box</div>
     <BoxForm :key="formKey" :boxName="boxData?.boxName ?? ''" :location="boxData?.location ?? ''" @update="handleInputChanged" @inputChanged="handleInputChanged" />
-    <div class="control-group">
-      <button v-if="!formChanged" @click="goBack">🔙 Back</button>
-      <button v-if="!formChanged && itemCount > 0" @click="emptyBox">❌ Empty Box</button>
-      <button v-if="!formChanged && itemCount === 0" @click="deleteBox">♻️ Delete Box</button>
-      
-      <button v-if="formChanged" @click="discardChanges">⌫ Discard Changes</button>
-      <button v-if="formChanged" @click="saveChanges">💾 Save Changes</button>
-    </div>
   </div>
 </template>
 

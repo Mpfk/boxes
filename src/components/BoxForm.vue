@@ -38,14 +38,15 @@
 </script>
 
 <template>
-  <form>
-    <div>
-      <label for="boxName">Box Name:</label>
-      <input id="boxName" v-model="boxName" @input="updateBoxName" type="text" required />
+  <form class="border rounded p-4">
+    <div class="mb-3">
+      <label for="boxName" class="form-label">Box Name</label>
+      <input id="boxName" class="form-control" v-model="boxName" @input="updateBoxName" type="text" required />
+      <div id="nameHelp" class="form-text">Required</div>
     </div>
-    <div>
-      <label for="location">Location:</label>
-      <input id="location" v-model="location" @input="updateLocation" type="text" required />
+    <div class="mb-3">
+      <label for="location" class="form-label">Location</label>
+      <input id="location" class="form-control" v-model="location" @input="updateLocation" type="text" required />
     </div>
   </form>
 </template>

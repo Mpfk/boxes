@@ -22,9 +22,12 @@
 </script>
 
 <template>
-  <div>
-    <label for="itemName">Item Name:</label>
-    <input id="itemName" v-model="itemName" @input="updateItemName" type="text" />
+  <div class="border rounded p-4">
+    <div class="mb-3">
+      <label for="itemName" class="form-label">Item Name</label>
+      <input id="itemName" class="form-control" v-model="itemName" @input="updateItemName" type="text" />
+      <div id="nameHelp" class="form-text">Required</div>
+    </div>
   </div>
 </template>
 

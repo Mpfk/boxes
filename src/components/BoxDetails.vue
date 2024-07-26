@@ -1,10 +1,9 @@
 <script setup lang="ts">
   // Imports
-  import { onMounted, ref } from 'vue';
-  import { useRoute } from 'vue-router';
+  import { onMounted, ref, inject } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
   import { generateClient } from 'aws-amplify/data';
   import type { Schema } from '../../amplify/data/resource';
-  import { useRouter } from 'vue-router';
 
   // Vars
   const route = useRoute();
@@ -14,6 +13,7 @@
   const router = useRouter();
   const boxID = ref('');
   const list = ref<Array<Schema['Boxes']["type"]>>([]);
+  const setHotBarButtons = inject('setHotBarButtons');
 
   // Functions
   onMounted(async () => {
@@ -22,10 +22,16 @@
     if (response.data) {
       boxName.value = response.data.boxName || '';
       location.value = response.data.location || '';
+      listContents();
     } else {
       console.error('Box data not found', response.errors);
       router.push('/404');
     }
+    setHotBarButtons([
+      { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: returnHome},
+      { icon: '+', description: 'Fill', buttonClass: 'btn-success', onClick: addItems },
+      { icon: '✓', description: 'Multi', buttonClass: 'btn-info', onClick: returnHome }
+    ]);
   });
 
   function returnHome() {
@@ -51,31 +57,32 @@
       },
     });
   }
-  // fetch items when the component is mounted
-  onMounted(() => {
-    listContents();
-  });
+
 </script>
 
 <template>
   <div>
-    <h1>📦 {{ boxName }} <span @click="editBox">(edit)</span></h1>
+    <div class="mt-5 mb-3 text-center fw-bold fs-3">{{ boxName }}</div>
+
+   <span @click="editBox">(edit)</span>
     <p>{{ location }}</p>
 
-    <h4>Contents:</h4>
-    <ul>
-      <li 
+    <div class="mt-2 mb-2 text-center fw-bold fs-5">Items</div>
+    <!-- Item List -->
+    <div class="list-group">
+      <button 
+        class="list-group-item list-group-item-action"
         v-for="item in list" 
         :key="item.itemID"
         @click="editItem(item.itemID)"
       >
-        {{ item.itemName }}
-      </li>
-    </ul>
+        <div class="w-100">
+          <span class="fw-bold">{{ item.itemName }}</span>
+        </div>
+        <small>{{ item.itemName }}</small>
+      </button>
+    </div>
 
 
-    <button @click="returnHome">🔙 Return Home</button>
-    <button @click="addItems">📥 Add Items</button>
-    <button @click="returnHome">☑️ Select Multiple</button>
   </div>
 </template>

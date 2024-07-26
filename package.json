@@ -12,7 +12,9 @@
   },
   "dependencies": {
     "@aws-amplify/ui-vue": "^4.2.9",
+    "@popperjs/core": "^2.11.8",
     "aws-amplify": "^6.4.0",
+    "bootstrap": "^5.3.3",
     "vue": "^3.4.21",
     "vue-router": "^4.4.0"
   },

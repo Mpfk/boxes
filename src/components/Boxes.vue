@@ -1,7 +1,6 @@
 <script setup lang="ts">
   // Imports
-  import '@/assets/main.css';
-  import { onMounted, ref } from 'vue';
+  import { onMounted, ref, inject } from 'vue';
   import type { Schema } from '../../amplify/data/resource';
   import { generateClient } from 'aws-amplify/data';
   import { useRouter } from 'vue-router';
@@ -10,6 +9,7 @@
   const client = generateClient<Schema>();
   const router = useRouter();
   const list = ref<Array<Schema['Boxes']["type"]>>([]);
+  const setHotBarButtons = inject('setHotBarButtons');
 
   // Functions
   function listBoxes() {
@@ -31,22 +31,32 @@
   // Fetch boxes when the component is mounted
   onMounted(() => {
     listBoxes();
+    setHotBarButtons([
+      { icon: '+', description: 'New', buttonClass: 'btn-success', onClick: navigateToNewBox},
+    ]);
   });
 </script>
 
 <template>
   <main>
-    <h1>📦 Boxes</h1>
-    <button @click="navigateToNewBox">+ New Box</button>
-    <ul>
-      <li 
+    
+    <div class="form-group mt-5">
+      <input type="text" class="form-control form-control-lg" id="search" placeholder="🔎 Search Boxes and Items" />
+    </div>
+
+    <div class="list-group mt-5">
+      <button 
+        class="list-group-item list-group-item-action"
         v-for="box in list" 
         :key="box.boxID"
         @click="box.boxID ? navigateToBox(box.boxID) : null"
       >
-        {{ box.boxName }}
-      </li>
-    </ul>
+        <div class="w-100">
+          <span class="fw-bold">{{ box.boxName }}</span>
+        </div>
+        <small>{{ box.location }}</small>
+      </button>
+    </div>
   </main>
 </template>
 

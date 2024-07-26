@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref } from 'vue';
+  import { onMounted, ref, inject } from 'vue';
   import { useRouter } from 'vue-router';
   import { generateClient } from 'aws-amplify/data';
   import type { Schema } from '../../amplify/data/resource';
@@ -10,6 +10,16 @@
   const router = useRouter();
   const boxName = ref('');
   const location = ref('');
+  const setHotBarButtons = inject('setHotBarButtons');
+  const addToast = inject('addToast');
+
+  // Functions
+  onMounted(() => {
+    setHotBarButtons([
+      { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack },
+      { icon: '✓', description: 'Create', buttonClass: 'btn-success', onClick: saveBox },
+    ]);
+  });
 
   function updateBoxName(value: string) {
     boxName.value = value;
@@ -30,9 +40,17 @@
         location: location.value
       });
       console.log('Box created successfully:', boxName.value, boxID);
+      addToast({
+        message: 'Box created successfully!',
+        bgClass: 'text-bg-success',
+      });
       router.push(`/box/${boxID}`);
     } catch (error) {
       console.error('Error creating box:', error);
+      addToast({
+          message: 'Error creating box. Please reload and try again.',
+          bgClass: 'text-bg-danger',
+        });
     }
   }
 
@@ -43,12 +61,8 @@
 
 <template>
   <div>
-    <h1>+ New Box</h1>
+    <div class="mt-5 mb-3 text-center fw-bold fs-3">New box +</div>
     <BoxForm :boxName="boxName" :location="location" @update="updateBoxName" @updateLocation="updateLocation" />
-    <div class="control-group">
-      <button @click="goBack">🔙 Back</button>
-      <button @click="saveBox">💾 Save</button>
-    </div>
   </div>
 </template>
 

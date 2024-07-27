@@ -57,10 +57,17 @@
 
   watch(() => itemData.value, (newVal, oldVal) => {
     formChanged.value = JSON.stringify(newVal) !== JSON.stringify(originalData.value);
-    setHotBarButtons([
-      { icon: '⌫', description: 'Cancel', buttonClass: 'btn-warning', onClick: discardChanges },
-      { icon: '✓', description: 'Save', buttonClass: 'btn-success', onClick: saveChanges }
-    ]);
+    if (formChanged.value) {
+      setHotBarButtons([
+        { icon: '⌫', description: 'Cancel', buttonClass: 'btn-warning', onClick: discardChanges },
+        { icon: '✓', description: 'Save', buttonClass: 'btn-success', onClick: saveChanges }
+      ]);
+    } else {
+      setHotBarButtons([
+        { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack },
+        { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: deleteItem }
+      ]);
+    }
   }, { deep: true });
 
   function discardChanges() {
@@ -83,7 +90,7 @@
           itemName: itemData.value.itemName,
         });
         formChanged.value = false;
-        originalData.value = { ...itemData.value }; // Update original data
+        originalData.value = { ...itemData.value };
         console.log('Changes saved successfully');
         addToast({
           message: 'Item updated successfully!',
@@ -127,12 +134,6 @@
   <div>
     <div class="mt-5 mb-3 text-center fw-bold fs-3">Edit <code>{{ itemData?.itemName }}</code> item</div>
     <ItemForm :initialItemName="itemData?.itemName ?? ''" @update="updateItemName" />
-    <div class="control-group">
-      <button @click="goBack">🔙 Back</button>
-      <button @click="discardChanges" v-if="formChanged">⌫ Discard Changes</button>
-      <button @click="saveChanges" :disabled="!formChanged">💾 Save Changes</button>
-      <button @click="deleteItem">🗑️ Delete Item</button>
-    </div>
   </div>
 </template>
 

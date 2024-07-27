@@ -142,10 +142,72 @@
       movePrompted.value = true;
       setHotBarButtons([
         { icon: 'X', description: 'Cancel', buttonClass: 'btn-warning', onClick: cancelMove },
-        { icon: '✓', description: 'Confirm', buttonClass: 'btn-success', onClick: cancelMove } // CHANGE THIS TO NEW MOVE ITEM FUNCTION
+        { icon: '✓', description: 'Confirm', buttonClass: 'btn-success', onClick: moveItem }
       ]);
     } catch (error) {
       console.error('Error loading boxes: ', error);
+    }
+  }
+
+  async function moveItem() {
+    const boxSelectElement = document.getElementById('box-select') as HTMLInputElement | null;
+    const destBoxID = boxSelectElement?.value;
+
+    if (itemData.value && destBoxID) {
+      try {
+        console.log('Attempting to move item:', {
+          boxID: destBoxID,
+          itemID: itemData.value.itemID,
+          itemName: itemData.value.itemName,
+        });
+
+        // Step 1: Create a new item in the destination box
+        const createResponse = await client.models.Boxes.create({
+          boxID: destBoxID,
+          itemID: itemData.value.itemID,
+          itemName: itemData.value.itemName,
+          // Add other item properties here if needed
+        });
+
+        if (createResponse && createResponse.data) {
+          console.log('Item created successfully in the new box');
+
+          // Step 2: Delete the old item from the original box
+          const deleteResponse = await client.models.Boxes.delete({
+            boxID: itemData.value.boxID,
+            itemID: itemData.value.itemID,
+          });
+
+          if (deleteResponse && deleteResponse.data) {
+            console.log('Old item deleted successfully');
+            addToast({
+              message: 'Item moved successfully!',
+              bgClass: 'text-bg-success',
+            });
+            router.push(`/box/${destBoxID}`);
+          } else {
+            console.error('Failed to delete old item, response:', deleteResponse);
+            addToast({
+              message: 'Failed to delete old item!',
+              bgClass: 'text-bg-danger',
+            });
+          }
+        } else {
+          console.error('Failed to create item in the new box, response:', createResponse);
+          addToast({
+            message: 'Failed to create item in the new box!',
+            bgClass: 'text-bg-danger',
+          });
+        }
+      } catch (error) {
+        console.error('Error moving item', error);
+        addToast({
+          message: 'Error moving item!',
+          bgClass: 'text-bg-danger',
+        });
+      }
+    } else {
+      console.error('Destination box ID is undefined');
     }
   }
 

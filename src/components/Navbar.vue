@@ -1,5 +1,5 @@
 <template>
-    <nav class="navbar navbar-expanded-md bg-body-tertiary">
+    <nav class="navbar fixed-top navbar-expanded-md bg-body-tertiary">
         <div class="col-1 col-md-4 text-start">
             <div class="d-inline-block">
                 <CircleButton icon="⚙" description="Settings" buttonClass="btn-dark" />

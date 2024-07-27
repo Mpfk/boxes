@@ -3,10 +3,18 @@
     import { onMounted, inject } from 'vue';
     import { useRouter } from 'vue-router';
 
+    // Interface
+    interface HotBarButton {
+        icon: string;
+        description: string;
+        buttonClass: string;
+        onClick: () => void;
+    }
+
     // Vars
     const router = useRouter();
-    const setHotBarButtons = inject('setHotBarButtons');
-    
+    const setHotBarButtons = inject<(buttons: HotBarButton[]) => void>('setHotBarButtons')!;
+
     // Functions
     function returnHome() {
         router.push('/');
@@ -14,7 +22,7 @@
 
     onMounted(() => {
         setHotBarButtons([
-            { icon: '⌂', description: 'Home', buttonClass: 'btn-warning', onClick: returnHome}
+            { icon: '⌂', description: 'Home', buttonClass: 'btn-warning', onClick: returnHome }
         ]);
     });
 </script>

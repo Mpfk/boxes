@@ -17,6 +17,18 @@
     readonly updatedAt: string;
   }
 
+  interface HotBarButton {
+    icon: string;
+    description: string;
+    buttonClass: string;
+    onClick: () => void;
+  }
+
+  interface ToastOptions {
+    message: string;
+    bgClass: string;
+  }
+
   // Vars
   const route = useRoute();
   const router = useRouter();
@@ -28,8 +40,9 @@
   const itemCount = ref(0);
   const formChanged = ref(false);
   const formKey = ref(0); // Key to force re-render of BoxForm
-  const setHotBarButtons = inject('setHotBarButtons');
-  const addToast = inject('addToast');
+
+  const setHotBarButtons = inject<(buttons: HotBarButton[]) => void>('setHotBarButtons')!;
+  const addToast = inject<(options: ToastOptions) => void>('addToast')!;
 
   // Functions
   onMounted(async () => {
@@ -44,13 +57,13 @@
           itemCount.value = items.value.length;
           if (itemCount.value === 0) {
             setHotBarButtons([
-              { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack},
-              { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: deleteBox}
+              { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack },
+              { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: deleteBox }
             ]);
           } else {
             setHotBarButtons([
-              { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack},
-              { icon: 'X', description: 'Empty', buttonClass: 'btn-danger', onClick: emptyBox}
+              { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack },
+              { icon: 'X', description: 'Empty', buttonClass: 'btn-danger', onClick: emptyBox }
             ]);
           }
         } else {
@@ -71,8 +84,8 @@
       boxData.value.location = data.location;
       formChanged.value = true;
       setHotBarButtons([
-        { icon: '⌫', description: 'Cancel', buttonClass: 'btn-warning', onClick: discardChanges},
-        { icon: '✓', description: 'Update', buttonClass: 'btn-success', onClick: saveChanges}
+        { icon: '⌫', description: 'Cancel', buttonClass: 'btn-warning', onClick: discardChanges },
+        { icon: '✓', description: 'Update', buttonClass: 'btn-success', onClick: saveChanges }
       ]);
     }
   }
@@ -84,13 +97,13 @@
       formChanged.value = false;
       if (itemCount.value === 0) {
         setHotBarButtons([
-          { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack},
-          { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: deleteBox}
+          { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack },
+          { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: deleteBox }
         ]);
       } else {
         setHotBarButtons([
-          { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack},
-          { icon: 'X', description: 'Empty', buttonClass: 'btn-danger', onClick: emptyBox}
+          { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack },
+          { icon: 'X', description: 'Empty', buttonClass: 'btn-danger', onClick: emptyBox }
         ]);
       }
     }
@@ -138,8 +151,8 @@
           bgClass: 'text-bg-success',
         });
         setHotBarButtons([
-          { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack},
-          { icon: 'X', description: 'Empty', buttonClass: 'btn-danger', onClick: emptyBox}
+          { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack },
+          { icon: 'X', description: 'Empty', buttonClass: 'btn-danger', onClick: emptyBox }
         ]);
       } catch (error) {
         console.error('Error emptying box', error);
@@ -170,7 +183,7 @@
         });
       }
     }
-  }  
+  }
 
   function goBack() {
     router.push(`/box/${boxID.value}`);

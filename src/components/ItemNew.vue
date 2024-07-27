@@ -6,6 +6,19 @@
     import { generateClient } from 'aws-amplify/data';
     import type { Schema } from '../../amplify/data/resource';
 
+    // Interfaces
+    interface HotBarButton {
+        icon: string;
+        description: string;
+        buttonClass: string;
+        onClick: () => void;
+    }
+
+    interface ToastOptions {
+        message: string;
+        bgClass: string;
+    }
+
     // Vars
     const route = useRoute();
     const router = useRouter();
@@ -13,9 +26,9 @@
     const itemName = ref('');
     const boxID = ref('');
     const isSaveDisabled = ref(true);
-    const setHotBarButtons = inject('setHotBarButtons');
-    const addToast = inject('addToast');
 
+    const setHotBarButtons = inject<(buttons: HotBarButton[]) => void>('setHotBarButtons')!;
+    const addToast = inject<(options: ToastOptions) => void>('addToast')!;
 
     // Functions
     onMounted(() => {
@@ -35,25 +48,25 @@
     });
 
     async function saveItem() {
-    const itemID = Math.random().toString(36).substring(2, 22); // Generate a random 20-character string
-    try {
-        await client.models.Boxes.create({
-        boxID: boxID.value,
-        itemID: itemID,
-        itemName: itemName.value,
-        });
-        console.log('Item added:', itemName.value, itemID);
-        addToast({
-            message: 'Item added successfully!',
-            bgClass: 'text-bg-success',
-        });
-    } catch (error) {
-        console.error('Error adding item:', error);
-        addToast({
-            message: 'Error creating item. Please reload and try again.',
-            bgClass: 'text-bg-danger',
-        });
-    }
+        const itemID = Math.random().toString(36).substring(2, 22); // Generate a random 20-character string
+        try {
+            await client.models.Boxes.create({
+                boxID: boxID.value,
+                itemID: itemID,
+                itemName: itemName.value,
+            });
+            console.log('Item added:', itemName.value, itemID);
+            addToast({
+                message: 'Item added successfully!',
+                bgClass: 'text-bg-success',
+            });
+        } catch (error) {
+            console.error('Error adding item:', error);
+            addToast({
+                message: 'Error creating item. Please reload and try again.',
+                bgClass: 'text-bg-danger',
+            });
+        }
     }
 
     function goBack() {

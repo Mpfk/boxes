@@ -5,6 +5,19 @@
   import type { Schema } from '../../amplify/data/resource';
   import ItemForm from './ItemForm.vue';
 
+  // Interfaces
+  interface HotBarButton {
+    icon: string;
+    description: string;
+    buttonClass: string;
+    onClick: () => void;
+  }
+
+  interface ToastOptions {
+    message: string;
+    bgClass: string;
+  }
+
   // Vars
   const route = useRoute();
   const router = useRouter();
@@ -14,8 +27,9 @@
   const itemData = ref<Schema['Boxes']['type'] | null>(null);
   const originalData = ref<Schema['Boxes']['type'] | null>(null);
   const formChanged = ref(false);
-  const setHotBarButtons = inject('setHotBarButtons');
-  const addToast = inject('addToast');
+
+  const setHotBarButtons = inject<(buttons: HotBarButton[]) => void>('setHotBarButtons')!;
+  const addToast = inject<(options: ToastOptions) => void>('addToast')!;
 
   // Load item data
   onMounted(async () => {
@@ -26,8 +40,8 @@
       itemData.value = response.data;
       originalData.value = { ...response.data }; // Store original data
       setHotBarButtons([
-        { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack},
-        { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: deleteItem}
+        { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack },
+        { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: deleteItem }
       ]);
     } else {
       console.error('Item data not found', response.errors);
@@ -44,9 +58,9 @@
   watch(() => itemData.value, (newVal, oldVal) => {
     formChanged.value = JSON.stringify(newVal) !== JSON.stringify(originalData.value);
     setHotBarButtons([
-        { icon: '⌫', description: 'Cancel', buttonClass: 'btn-warning', onClick: discardChanges},
-        { icon: '✓', description: 'Save', buttonClass: 'btn-success', onClick: saveChanges}
-      ]);
+      { icon: '⌫', description: 'Cancel', buttonClass: 'btn-warning', onClick: discardChanges },
+      { icon: '✓', description: 'Save', buttonClass: 'btn-success', onClick: saveChanges }
+    ]);
   }, { deep: true });
 
   function discardChanges() {
@@ -55,8 +69,8 @@
       formChanged.value = false;
     }
     setHotBarButtons([
-      { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack},
-      { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: deleteItem}
+      { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack },
+      { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: deleteItem }
     ]);
   }
 
@@ -76,8 +90,8 @@
           bgClass: 'text-bg-success',
         });
         setHotBarButtons([
-          { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack},
-          { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: deleteItem}
+          { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack },
+          { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: deleteItem }
         ]);
       } catch (error) {
         console.error('Error saving changes', error);

@@ -27,6 +27,9 @@
   const itemData = ref<Schema['Boxes']['type'] | null>(null);
   const originalData = ref<Schema['Boxes']['type'] | null>(null);
   const formChanged = ref(false);
+  const movePrompted = ref(false);
+  const availableBoxes = ref<Array<Schema['Boxes']["type"]>>([]);
+
 
   const setHotBarButtons = inject<(buttons: HotBarButton[]) => void>('setHotBarButtons')!;
   const addToast = inject<(options: ToastOptions) => void>('addToast')!;
@@ -41,6 +44,7 @@
       originalData.value = { ...response.data }; // Store original data
       setHotBarButtons([
         { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack },
+        { icon: '⤤', description: 'Move', buttonClass: 'btn-info', onClick: promptMove },
         { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: deleteItem }
       ]);
     } else {
@@ -65,6 +69,7 @@
     } else {
       setHotBarButtons([
         { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack },
+        { icon: '⤤', description: 'Move', buttonClass: 'btn-info', onClick: promptMove },
         { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: deleteItem }
       ]);
     }
@@ -77,6 +82,7 @@
     }
     setHotBarButtons([
       { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack },
+      { icon: '⤤', description: 'Move', buttonClass: 'btn-info', onClick: promptMove },
       { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: deleteItem }
     ]);
   }
@@ -98,6 +104,7 @@
         });
         setHotBarButtons([
           { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack },
+          { icon: '⤤', description: 'Move', buttonClass: 'btn-info', onClick: promptMove },
           { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: deleteItem }
         ]);
       } catch (error) {
@@ -125,6 +132,32 @@
     }
   }
 
+  async function promptMove() {
+    try {
+      client.models.Boxes.observeQuery({ filter: { itemID: { eq: 'box_root' } } }).subscribe({
+        next: ({ items, isSynced }) => {
+          availableBoxes.value = items;
+        },
+      }); 
+      movePrompted.value = true;
+      setHotBarButtons([
+        { icon: 'X', description: 'Cancel', buttonClass: 'btn-warning', onClick: cancelMove },
+        { icon: '✓', description: 'Confirm', buttonClass: 'btn-success', onClick: cancelMove } // CHANGE THIS TO NEW MOVE ITEM FUNCTION
+      ]);
+    } catch (error) {
+      console.error('Error loading boxes: ', error);
+    }
+  }
+
+  function cancelMove() {
+    movePrompted.value = false;
+    setHotBarButtons([
+      { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack },
+      { icon: '⤤', description: 'Move', buttonClass: 'btn-info', onClick: promptMove },
+      { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: deleteItem }
+    ]);
+  }
+
   function goBack() {
     router.push(`/box/${boxID.value}`);
   }
@@ -133,7 +166,14 @@
 <template>
   <div>
     <div class="mt-5 mb-3 text-center fw-bold fs-3">Edit <code>{{ itemData?.itemName }}</code> item</div>
-    <ItemForm :initialItemName="itemData?.itemName ?? ''" @update="updateItemName" />
+    <ItemForm :initialItemName="itemData?.itemName ?? ''" @update="updateItemName" v-if="!movePrompted" />
+    
+    <div class="mt-5 rounded border p-4" v-if="movePrompted">
+      <label for="box-select" class="form-label">Move to box:</label>
+      <select id="box-select" class="form-select">
+        <option v-for="box in availableBoxes" :key="box.boxID" :value="box.boxID">{{ box.boxName }}</option>
+      </select>
+    </div>
   </div>
 </template>
 

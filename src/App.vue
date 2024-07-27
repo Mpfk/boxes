@@ -7,17 +7,22 @@ import HotBar from './components/HotBar.vue';
 import { toastStore } from './utils/toastStore';
 import Toaster from './components/Toaster.vue';
 
-const hotBarButtons = ref([]);
+interface HotBarButton {
+  icon: string;
+  description: string;
+  onClick: () => void;
+  buttonClass: string;
+}
 
-function setHotBarButtons(buttons) {
+const hotBarButtons = ref<HotBarButton[]>([]);
+
+function setHotBarButtons(buttons: HotBarButton[]) {
   hotBarButtons.value = buttons;
 }
 
 provide('setHotBarButtons', setHotBarButtons);
 provide('addToast', toastStore.addToast);
-
 </script>
-
 <template>
   <main>
     <authenticator>

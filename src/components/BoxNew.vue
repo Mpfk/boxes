@@ -4,18 +4,27 @@
   import { generateClient } from 'aws-amplify/data';
   import type { Schema } from '../../amplify/data/resource';
   import BoxForm from './BoxForm.vue';
+  import type { Toast } from '../utils/toastStore'; // Import the Toast type
+
+  // Define the type for HotBarButton
+  interface HotBarButton {
+    icon: string;
+    description: string;
+    onClick: () => void;
+    buttonClass: string;
+  }
 
   // Vars
   const client = generateClient<Schema>();
   const router = useRouter();
   const boxName = ref('');
   const location = ref('');
-  const setHotBarButtons = inject('setHotBarButtons');
-  const addToast = inject('addToast');
+  const setHotBarButtons = inject<((buttons: HotBarButton[]) => void)>('setHotBarButtons');
+  const addToast = inject<(toast: Toast) => void>('addToast'); // Specify the type for addToast
 
   // Functions
   onMounted(() => {
-    setHotBarButtons([
+    setHotBarButtons?.([
       { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack },
       { icon: '✓', description: 'Create', buttonClass: 'btn-success', onClick: saveBox },
     ]);
@@ -31,7 +40,6 @@
 
   async function saveBox() {
     const boxID = Math.random().toString(36).substring(2, 8); // Generate a random 6-character string
-
     try {
       await client.models.Boxes.create({
         boxID: boxID,
@@ -40,22 +48,21 @@
         location: location.value
       });
       console.log('Box created successfully:', boxName.value, boxID);
-      addToast({
+      addToast?.({
         message: 'Box created successfully!',
         bgClass: 'text-bg-success',
       });
       router.push(`/box/${boxID}`);
     } catch (error) {
       console.error('Error creating box:', error);
-      addToast({
-          message: 'Error creating box. Please reload and try again.',
-          bgClass: 'text-bg-danger',
-        });
+      addToast?.({
+        message: 'Error creating box. Please reload and try again.',
+      });
     }
   }
 
   function goBack() {
-    router.push('/');
+    router.back();
   }
 </script>
 

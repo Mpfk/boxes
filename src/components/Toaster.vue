@@ -1,5 +1,5 @@
 <template>
-    <div id="toaster" class="toast-container position-fixed top-0 start-50 translate-middle-x pt-5">
+    <div id="toaster" class="toast-container position-fixed bottom-0 start-50 translate-middle-x" style="padding-bottom: 6em;">
       <Toast v-for="(toast, index) in toasts" :key="index" :message="toast.message" :bgClass="toast.bgClass" />
     </div>
   </template>

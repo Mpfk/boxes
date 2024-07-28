@@ -22,6 +22,8 @@
   const boxID = ref('');
   const list = ref<Array<Schema['Boxes']["type"]>>([]);
   const setHotBarButtons = inject<(buttons: HotBarButton[]) => void>('setHotBarButtons')!;
+  const multiOn = ref(false);
+  const multiSelected = ref<Array<string>>([]);
 
   // Functions
   onMounted(async () => {
@@ -38,7 +40,7 @@
     setHotBarButtons([
       { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: returnHome },
       { icon: '+', description: 'Fill', buttonClass: 'btn-success', onClick: addItems },
-      { icon: '✓', description: 'Multi', buttonClass: 'btn-info', onClick: returnHome }
+      { icon: '✓', description: 'Multi', buttonClass: 'btn-secondary', onClick: enableMulti }
     ]);
   });
 
@@ -66,6 +68,43 @@
     });
   }
 
+  function enableMulti() {
+    multiOn.value = true;
+    setHotBarButtons([
+      { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: returnHome },
+      { icon: '⤤', description: 'Move', buttonClass: 'btn-info', onClick: addItems },
+      { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: addItems },
+      { icon: 'X', description: 'Cancel', buttonClass: 'btn-secondary', onClick: disableMulti }
+    ]);
+    console.log('Enable Multi');
+  }
+
+  function multiSelect(itemID: string) {
+    if (multiSelected.value.includes(itemID)) {
+      multiSelected.value = multiSelected.value.filter((id) => id !== itemID);     
+    } else {
+      multiSelected.value = [...multiSelected.value, itemID];
+    }
+  }
+
+  async function multiMove() {
+    console.log('Move Items');
+    for (const itemID of multiSelected.value) {
+      console.log('Move Item', itemID);
+    }
+  }
+
+  function disableMulti() {
+    multiSelected.value = [];
+    multiOn.value = false;
+    setHotBarButtons([
+      { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: returnHome },
+      { icon: '+', description: 'Fill', buttonClass: 'btn-success', onClick: addItems },
+      { icon: '✓', description: 'Multi', buttonClass: 'btn-secondary', onClick: enableMulti }
+    ]);
+    console.log('Disable Multi');
+  }
+
 </script>
 
 <template>
@@ -82,7 +121,8 @@
         class="list-group-item list-group-item-action"
         v-for="item in list" 
         :key="item.itemID"
-        @click="editItem(item.itemID)"
+        :class="multiSelected.includes(item.itemID) ? 'list-group-item-warning' : ''"
+        @click="multiOn ? multiSelect(item.itemID) : editItem(item.itemID)"
       >
         <div class="w-100">
           <span class="fw-bold">{{ item.itemName }}</span>

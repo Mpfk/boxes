@@ -12,6 +12,10 @@
     buttonClass: string;
     onClick: () => void;
   }
+  interface ToastOptions {
+    message: string;
+    bgClass: string;
+  }
 
   // Vars
   const route = useRoute();
@@ -24,6 +28,7 @@
   const setHotBarButtons = inject<(buttons: HotBarButton[]) => void>('setHotBarButtons')!;
   const multiOn = ref(false);
   const multiSelected = ref<Array<string>>([]);
+  const addToast = inject<(options: ToastOptions) => void>('addToast')!;
 
   // Functions
   onMounted(async () => {
@@ -73,7 +78,7 @@
     setHotBarButtons([
       { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: returnHome },
       { icon: '⤤', description: 'Move', buttonClass: 'btn-info', onClick: addItems },
-      { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: addItems },
+      { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: multiDelete },
       { icon: 'X', description: 'Cancel', buttonClass: 'btn-secondary', onClick: disableMulti }
     ]);
     console.log('Enable Multi');
@@ -91,12 +96,35 @@
     console.log('Move Items');
     for (const itemID of multiSelected.value) {
       console.log('Move Item', itemID);
+
+    }
+  }
+
+  async function multiDelete() {
+    console.log('Delete Items');
+    try {
+      for (const itemID of multiSelected.value) {
+        console.log('Delete Item', itemID);
+        await client.models.Boxes.delete({ boxID: boxID.value, itemID });
+      }
+      disableMulti();
+      addToast({
+        message: 'Items removed successfully.',
+        bgClass: 'text-bg-success',
+      });
+    } catch (error) {
+      console.error('Error deleting items', error);
+      addToast({
+        message: 'Error deleting items.',
+        bgClass: 'text-bg-danger',
+      });
     }
   }
 
   function disableMulti() {
     multiSelected.value = [];
     multiOn.value = false;
+    listContents();
     setHotBarButtons([
       { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: returnHome },
       { icon: '+', description: 'Fill', buttonClass: 'btn-success', onClick: addItems },

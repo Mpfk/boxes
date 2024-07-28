@@ -23,8 +23,11 @@
     const route = useRoute();
     const router = useRouter();
     const client = generateClient<Schema>();
-    const itemName = ref('');
     const boxID = ref('');
+    const itemName = ref('');
+    const quantity = ref(0);
+    const note = ref('');
+
     const isSaveDisabled = ref(true);
 
     const setHotBarButtons = inject<(buttons: HotBarButton[]) => void>('setHotBarButtons')!;
@@ -39,13 +42,21 @@
         ]);
     });
 
+    watch(itemName, (newValue) => {
+        isSaveDisabled.value = !newValue.trim();
+    });
+
     function updateItemName(value: string) {
-        itemName.value = value;
+    itemName.value = value;
     }
 
-    watch(itemName, (newValue) => {
-        isSaveDisabled.value = !newValue.trim(); // Disable save button if itemName is empty or whitespace
-    });
+    function updateQuantity(value: number) {
+    quantity.value = value;
+    }
+
+    function updateNote(value: string) {
+    note.value = value;
+    }
 
     async function saveItem() {
         const itemID = Math.random().toString(36).substring(2, 22); // Generate a random 20-character string
@@ -54,6 +65,8 @@
                 boxID: boxID.value,
                 itemID: itemID,
                 itemName: itemName.value,
+                quantity: quantity.value,
+                note: note.value,
             });
             console.log('Item added:', itemName.value, itemID);
             addToast({
@@ -77,8 +90,8 @@
 <template>
     <div>
         <div class="mt-5 mb-3 text-center fw-bold fs-3">New item +</div>
-        <ItemForm :initialItemName="itemName" @update="updateItemName" />
-    </div>
+            <ItemForm :initialItemName="itemName" :initialQuantity="quantity" :initialNote="note" @update="({ itemName, quantity, note }) => { updateItemName(itemName); updateQuantity(quantity); updateNote(note); }" />
+        </div>
 </template>
 
 <style scoped>

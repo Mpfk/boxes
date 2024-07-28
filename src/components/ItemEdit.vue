@@ -4,7 +4,6 @@
   import { generateClient } from 'aws-amplify/data';
   import type { Schema } from '../../amplify/data/resource';
   import ItemForm from './ItemForm.vue';
-
   // Interfaces
   interface HotBarButton {
     icon: string;
@@ -12,12 +11,10 @@
     buttonClass: string;
     onClick: () => void;
   }
-
   interface ToastOptions {
     message: string;
     bgClass: string;
   }
-
   // Vars
   const route = useRoute();
   const router = useRouter();
@@ -29,11 +26,8 @@
   const formChanged = ref(false);
   const movePrompted = ref(false);
   const availableBoxes = ref<Array<Schema['Boxes']["type"]>>([]);
-
-
   const setHotBarButtons = inject<(buttons: HotBarButton[]) => void>('setHotBarButtons')!;
   const addToast = inject<(options: ToastOptions) => void>('addToast')!;
-
   // Load item data
   onMounted(async () => {
     boxID.value = route.params.boxID as string;
@@ -52,13 +46,13 @@
       router.push('/404');
     }
   });
-
-  function updateItemName(value: string) {
+  function handleUpdate({ itemName, quantity, note }: { itemName?: string, quantity?: number, note?: string }) {
     if (itemData.value) {
-      itemData.value.itemName = value;
+      if (itemName !== undefined) itemData.value.itemName = itemName;
+      if (quantity !== undefined) itemData.value.quantity = quantity;
+      if (note !== undefined) itemData.value.note = note;
     }
   }
-
   watch(() => itemData.value, (newVal, oldVal) => {
     formChanged.value = JSON.stringify(newVal) !== JSON.stringify(originalData.value);
     if (formChanged.value) {
@@ -74,7 +68,6 @@
       ]);
     }
   }, { deep: true });
-
   function discardChanges() {
     if (originalData.value) {
       itemData.value = { ...originalData.value };
@@ -86,7 +79,6 @@
       { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: deleteItem }
     ]);
   }
-
   async function saveChanges() {
     if (itemData.value) {
       try {
@@ -94,6 +86,8 @@
           boxID: itemData.value.boxID,
           itemID: itemData.value.itemID,
           itemName: itemData.value.itemName,
+          quantity: itemData.value.quantity,
+          note: itemData.value.note,
         });
         formChanged.value = false;
         originalData.value = { ...itemData.value };
@@ -112,7 +106,6 @@
       }
     }
   }
-
   async function deleteItem() {
     if (itemData.value) {
       try {
@@ -131,7 +124,6 @@
       }
     }
   }
-
   async function promptMove() {
     try {
       client.models.Boxes.observeQuery({ filter: { itemID: { eq: 'box_root' } } }).subscribe({
@@ -148,11 +140,9 @@
       console.error('Error loading boxes: ', error);
     }
   }
-
   async function moveItem() {
     const boxSelectElement = document.getElementById('box-select') as HTMLInputElement | null;
     const destBoxID = boxSelectElement?.value;
-
     if (itemData.value && destBoxID) {
       try {
         console.log('Attempting to move item:', {
@@ -160,24 +150,21 @@
           itemID: itemData.value.itemID,
           itemName: itemData.value.itemName,
         });
-
         // Step 1: Create a new item in the destination box
         const createResponse = await client.models.Boxes.create({
           boxID: destBoxID,
           itemID: itemData.value.itemID,
           itemName: itemData.value.itemName,
-          // Add other item properties here if needed
+          quantity: itemData.value.quantity,
+          note: itemData.value.note,
         });
-
         if (createResponse && createResponse.data) {
           console.log('Item created successfully in the new box');
-
           // Step 2: Delete the old item from the original box
           const deleteResponse = await client.models.Boxes.delete({
             boxID: itemData.value.boxID,
             itemID: itemData.value.itemID,
           });
-
           if (deleteResponse && deleteResponse.data) {
             console.log('Old item deleted successfully');
             addToast({
@@ -210,7 +197,6 @@
       console.error('Destination box ID is undefined');
     }
   }
-
   function cancelMove() {
     movePrompted.value = false;
     setHotBarButtons([
@@ -219,7 +205,6 @@
       { icon: '♽', description: 'Delete', buttonClass: 'btn-danger', onClick: deleteItem }
     ]);
   }
-
   function goBack() {
     router.push(`/box/${boxID.value}`);
   }
@@ -228,8 +213,13 @@
 <template>
   <div>
     <div class="mt-5 mb-3 text-center fw-bold fs-3">Edit <code>{{ itemData?.itemName }}</code> item</div>
-    <ItemForm :initialItemName="itemData?.itemName ?? ''" @update="updateItemName" v-if="!movePrompted" />
-    
+    <ItemForm 
+      :initialItemName="itemData?.itemName ?? ''" 
+      :initialQuantity="itemData?.quantity ?? 0" 
+      :initialNote="itemData?.note ?? ''" 
+      @update="handleUpdate" 
+      v-if="!movePrompted" 
+    />    
     <div class="mt-5 rounded border p-4" v-if="movePrompted">
       <label for="box-select" class="form-label">Move to box:</label>
       <select id="box-select" class="form-select">

@@ -25,7 +25,7 @@
     const client = generateClient<Schema>();
     const boxID = ref('');
     const itemName = ref('');
-    const quantity = ref(0);
+    const quantity = ref(1);
     const note = ref('');
 
     const isSaveDisabled = ref(true);

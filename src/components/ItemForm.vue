@@ -42,7 +42,7 @@ function updateItem() {
     </div>
     <div class="mb-3">
       <label for="quantity" class="form-label">Quantity</label>
-      <input id="quantity" class="form-control" v-model="quantity" @input="updateItem" type="number" />
+      <input id="quantity" class="form-control" v-model="quantity" @input="updateItem" type="number" value="1" />
     </div>
     <div class="mb-3">
       <label for="note" class="form-label">Note</label>

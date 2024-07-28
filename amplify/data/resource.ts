@@ -13,6 +13,8 @@ const schema = a.schema({
       boxName: a.string(),
       itemName: a.string(),
       location: a.string(),
+      quantity: a.float(),
+      note: a.string(),
     })
     .identifier(['boxID', 'itemID'])
     .authorization((allow) => [allow.publicApiKey()])

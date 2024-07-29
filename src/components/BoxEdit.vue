@@ -40,7 +40,6 @@
   const itemCount = ref(0);
   const formChanged = ref(false);
   const formKey = ref(0); // Key to force re-render of BoxForm
-
   const setHotBarButtons = inject<(buttons: HotBarButton[]) => void>('setHotBarButtons')!;
   const addToast = inject<(options: ToastOptions) => void>('addToast')!;
 
@@ -134,7 +133,7 @@
 
   async function emptyBox() {
     // Show a confirmation dialog before emptying the box
-    if (!confirm(`Are you sure you want to empty this box? It's contents will be deleted.`)) {
+    if (!window.confirm(`Are you sure you want to empty this box? It's contents will be deleted.`)) {
       return;
     } else {
       try {

@@ -89,7 +89,7 @@
 
   function multiSelect(itemID: string) {
     if (multiSelected.value.includes(itemID)) {
-      multiSelected.value = multiSelected.value.filter((id) => id !== itemID);     
+      multiSelected.value = multiSelected.value.filter((id: string) => id !== itemID);     
     } else {
       multiSelected.value = [...multiSelected.value, itemID];
     }
@@ -193,18 +193,16 @@
     ]);
     console.log('Disable Multi');
   }
-
 </script>
 
 <template>
   <div>
     <div class="mt-5 mb-3 text-center fw-bold fs-3">{{ boxName }}</div>
     <div class="text-center mb-4">{{ location }}</div>
-
     <div class="mt-2 mb-2 text-center fw-bold fs-5">Items</div>
     <!-- Item List -->
     <div class="list-group" v-if="!multiMovePrompted">
-      <button 
+      <button
         class="list-group-item list-group-item-action"
         v-for="item in list" 
         :key="item.itemID"

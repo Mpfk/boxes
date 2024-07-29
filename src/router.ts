@@ -1,5 +1,6 @@
 // Imports
 import { createRouter, createWebHistory } from 'vue-router';
+import Options from './components/Options.vue';
 import Boxes from './components/Boxes.vue';
 import BoxNew from './components/BoxNew.vue';
 import BoxDetails from './components/BoxDetails.vue';
@@ -11,6 +12,7 @@ import NotFound from './components/NotFound.vue';
 // Vars
 const routes = [
   { path: '/', component: Boxes },
+  { path: '/options', component: Options },
   { path: '/box/new', component: BoxNew, props: true },
   { path: '/box/:boxID', component: BoxDetails, props: true },
   { path: '/box/:boxID/edit', component: BoxEdit, props: true },

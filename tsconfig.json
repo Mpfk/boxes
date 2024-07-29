@@ -10,5 +10,8 @@
     {
       "path": "./amplify/tsconfig.json"
     }
-  ]
+  ],
+  "compilerOptions": {
+    "lib": ["dom", "esnext"],
+  }
 }

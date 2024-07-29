@@ -12,7 +12,6 @@
       "$amplify/*": [
         "../.amplify/generated/*"
       ]
-    },
-    "lib": ["dom", "es2022"]
+    }
   }
 }

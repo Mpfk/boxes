@@ -10,8 +10,5 @@
     {
       "path": "./amplify/tsconfig.json"
     }
-  ],
-  "compilerOptions": {
-    "lib": ["dom", "es2022"]
-  }
+  ]
 }

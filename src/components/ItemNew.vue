@@ -19,6 +19,12 @@
         bgClass: string;
     }
 
+    interface UpdateEvent {
+        itemName: string;
+        quantity: number;
+        note: string;
+    }
+
     // Vars
     const route = useRoute();
     const router = useRouter();
@@ -27,9 +33,7 @@
     const itemName = ref('');
     const quantity = ref(1);
     const note = ref('');
-
     const isSaveDisabled = ref(true);
-
     const setHotBarButtons = inject<(buttons: HotBarButton[]) => void>('setHotBarButtons')!;
     const addToast = inject<(options: ToastOptions) => void>('addToast')!;
 
@@ -47,15 +51,15 @@
     });
 
     function updateItemName(value: string) {
-    itemName.value = value;
+        itemName.value = value;
     }
 
     function updateQuantity(value: number) {
-    quantity.value = value;
+        quantity.value = value;
     }
 
     function updateNote(value: string) {
-    note.value = value;
+        note.value = value;
     }
 
     async function saveItem() {
@@ -90,8 +94,17 @@
 <template>
     <div>
         <div class="mt-5 mb-3 text-center fw-bold fs-3">New item +</div>
-            <ItemForm :initialItemName="itemName" :initialQuantity="quantity" :initialNote="note" @update="({ itemName, quantity, note }) => { updateItemName(itemName); updateQuantity(quantity); updateNote(note); }" />
-        </div>
+        <ItemForm 
+            :initialItemName="itemName" 
+            :initialQuantity="quantity" 
+            :initialNote="note" 
+            @update="({ itemName, quantity, note }: UpdateEvent) => { 
+                updateItemName(itemName); 
+                updateQuantity(quantity); 
+                updateNote(note); 
+            }" 
+        />
+    </div>
 </template>
 
 <style scoped>

@@ -46,6 +46,7 @@
     }
     setHotBarButtons([
       { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: returnHome },
+      { icon: '✎', description: 'Edit', buttonClass: 'btn-secondary', onClick: editBox },
       { icon: '+', description: 'Fill', buttonClass: 'btn-success', onClick: addItems },
       { icon: '✓', description: 'Multi', buttonClass: 'btn-secondary', onClick: enableMulti }
     ]);
@@ -117,6 +118,7 @@
     disableMulti();
     setHotBarButtons([
       { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: returnHome },
+      { icon: '✎', description: 'Edit', buttonClass: 'btn-secondary', onClick: editBox },
       { icon: '+', description: 'Fill', buttonClass: 'btn-success', onClick: addItems },
       { icon: '✓', description: 'Multi', buttonClass: 'btn-secondary', onClick: enableMulti }
     ]);
@@ -185,6 +187,7 @@
     listContents();
     setHotBarButtons([
       { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: returnHome },
+      { icon: '✎', description: 'Edit', buttonClass: 'btn-secondary', onClick: editBox },
       { icon: '+', description: 'Fill', buttonClass: 'btn-success', onClick: addItems },
       { icon: '✓', description: 'Multi', buttonClass: 'btn-secondary', onClick: enableMulti }
     ]);
@@ -196,9 +199,7 @@
 <template>
   <div>
     <div class="mt-5 mb-3 text-center fw-bold fs-3">{{ boxName }}</div>
-
-    <span @click="editBox">(edit)</span>
-    <p>{{ location }}</p>
+    <div class="text-center mb-4">{{ location }}</div>
 
     <div class="mt-2 mb-2 text-center fw-bold fs-5">Items</div>
     <!-- Item List -->

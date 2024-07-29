@@ -135,7 +135,7 @@
           await client.models.Boxes.create({
             boxID: newBoxID,
             itemID,
-            itemName: list.value.find((item) => item.itemID === itemID)?.itemName || '',
+            itemName: list.value.find((item: Schema['Boxes']["type"]) => item.itemID === itemID)?.itemName || '',
           });
           // Delete the old item
           await client.models.Boxes.delete({ boxID: boxID.value, itemID });

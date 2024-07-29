@@ -4,6 +4,8 @@
   import type { Schema } from '../../amplify/data/resource';
   import { generateClient } from 'aws-amplify/data';
   import { useRouter } from 'vue-router';
+  import ExportButton from './buttons/ExportData.vue';
+  import type { Toast } from '../utils/toastStore';
 
   // Interface
   interface HotBarButton {
@@ -47,17 +49,17 @@
       <!-- Boxes & QRs -->
       <div class="list-group-item d-flex align-items-center justify-content-between">
         <p style="margin: 0">Box List + QR Codes PDF</p>
-        <button class="btn btn-secondary">Download</button>
+        <button class="btn btn-secondary disabled">Coming Soon</button>
       </div>
       <!-- Full Inventory -->
       <div class="list-group-item d-flex align-items-center justify-content-between">
         <p style="margin: 0">Full Inventory PDF</p>
-        <button class="btn btn-secondary">Download</button>
+        <button class="btn btn-secondary disabled">Coming Soon</button>
       </div>
-      <!-- Import Data -->
+      <!-- Label Maker CSV -->
       <div class="list-group-item d-flex align-items-center justify-content-between">
         <p style="margin: 0">Label Maker CSV</p>
-        <button class="btn btn-secondary">Download</button>
+        <button class="btn btn-secondary disabled">Coming Soon</button>
       </div>
     </div>
 
@@ -67,12 +69,12 @@
       <!-- Export Data -->
       <div class="list-group-item d-flex align-items-center justify-content-between">
         <p style="margin: 0">Export Data</p>
-        <button class="btn btn-secondary">Download</button>
+        <ExportButton />
       </div>
       <!-- Import Data -->
       <div class="list-group-item d-flex align-items-center justify-content-between">
         <p style="margin: 0">Import Data</p>
-        <button class="btn btn-secondary">Upload</button>
+        <button class="btn btn-secondary disabled">Coming Soon</button>
       </div>
     </div>
   </main>

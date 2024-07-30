@@ -5,6 +5,7 @@
   import { generateClient } from 'aws-amplify/data';
   import { useRouter } from 'vue-router';
   import ExportButton from './buttons/ExportData.vue';
+  import ImportButton from './buttons/ImportData.vue';
   import type { Toast } from '../utils/toastStore';
 
   // Interface
@@ -74,7 +75,7 @@
       <!-- Import Data -->
       <div class="list-group-item d-flex align-items-center justify-content-between">
         <p style="margin: 0">Import Data</p>
-        <button class="btn btn-secondary disabled">Coming Soon</button>
+        <ImportButton />
       </div>
     </div>
   </main>

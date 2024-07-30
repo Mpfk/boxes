@@ -18,15 +18,19 @@
               <label for="formFile" class="form-label">Upload JSON File</label>
               <input class="form-control" type="file" id="formFile" ref="formFile" @change="handleFileUpload" :disabled="fileUploaded" />
             </div>
-            <ul class="list-group mt-3" v-if="importStatus.length > 0">
-              <li v-for="(status, index) in importStatus" :key="index" 
-                  :class="['list-group-item', status.success ? 'list-group-item-success' : (status.isWarning ? 'list-group-item-warning' : 'list-group-item-danger')]">
+            <ul class="list-group mt-3" v-if="importStatusList.length > 0">
+              <li v-for="(status, index) in importStatusList" :key="index" 
+                  :class="['list-group-item', status.importStatus === 'success' ? 'list-group-item-success' : (status.importStatus === 'warning' ? 'list-group-item-warning' : (status.importStatus === 'ignored' ? 'list-group-item-secondary' : 'list-group-item-danger'))]">
                 {{ status.boxID }} - {{ status.boxName }} - {{ status.itemID }} - {{ status.itemName }}: {{ status.message }}
               </li>
             </ul>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="isImporting">
+            <span v-if="duplicates.length > 0">{{ duplicates.length }} Duplicates Found</span>
+            <button v-if="duplicates.length > 0" class="btn btn-secondary me-2" @click="handleDuplicatesAction('ignore')">Ignore</button>
+            <button v-if="duplicates.length > 0" class="btn btn-warning me-2" @click="handleDuplicatesAction('overwrite')">Overwrite</button>
+            <button v-if="duplicates.length > 0" class="btn btn-primary" @click="handleDuplicatesAction('add')">Duplicate</button>
+            <button v-else type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="isImporting">
               <span v-if="isImporting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
               <span v-if="!isImporting && !importCompleted">Close</span>
               <span v-if="importCompleted && !hasErrors">Done</span>
@@ -41,17 +45,18 @@
 
 <script>
 import { ref, onMounted } from 'vue';
-import { importData } from '../../utils/dataImport';
+import { importData, handleDuplicates as handleDuplicatesFn } from '../../utils/dataImport';
 
 export default {
   name: 'ImportData',
   setup() {
-    const importStatus = ref([]);
+    const importStatusList = ref([]);
     const fileUploaded = ref(false);
     const importCompleted = ref(false);
     const isImporting = ref(false);
     const hasErrors = ref(false);
     const formFile = ref(null);
+    const duplicates = ref([]);
 
     const handleFileUpload = (event) => {
       const file = event.target.files[0];
@@ -63,9 +68,9 @@ export default {
           const content = e.target.result;
           try {
             const jsonData = JSON.parse(content);
-            await importData(jsonData, (boxID, boxName, itemID, itemName, success, message, isWarning) => {
-              importStatus.value.push({ boxID, boxName, itemID, itemName, success, message, isWarning });
-              if (!success) {
+            duplicates.value = await importData(jsonData, (boxID, boxName, itemID, itemName, importStatus, message) => {
+              importStatusList.value.push({ boxID, boxName, itemID, itemName, importStatus, message });
+              if (importStatus === 'failure') {
                 hasErrors.value = true;
               }
             });
@@ -82,12 +87,26 @@ export default {
       }
     };
 
+    const handleDuplicatesAction = async (action) => {
+      isImporting.value = true;
+      await handleDuplicatesFn(duplicates.value, action, (boxID, boxName, itemID, itemName, importStatus, message) => {
+        const status = importStatusList.value.find(status => status.boxID === boxID && status.itemID === itemID);
+        if (status) {
+          status.importStatus = importStatus;
+          status.message = message;
+        }
+      });
+      isImporting.value = false;
+      duplicates.value = []; // Clear duplicates list after handling
+    };
+
     const resetForm = () => {
-      importStatus.value = [];
+      importStatusList.value = [];
       fileUploaded.value = false;
       importCompleted.value = false;
       isImporting.value = false;
       hasErrors.value = false;
+      duplicates.value = [];
       if (formFile.value) {
         formFile.value.value = '';
       }
@@ -100,12 +119,14 @@ export default {
 
     return {
       handleFileUpload,
-      importStatus,
+      handleDuplicatesAction,
+      importStatusList,
       fileUploaded,
       importCompleted,
       isImporting,
       hasErrors,
-      formFile
+      formFile,
+      duplicates
     };
   }
 };

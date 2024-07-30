@@ -37,15 +37,31 @@ const generateId = (length: number): string => {
 const handleVersion102 = async (
   data: any[],
   updateStatus: (boxID: string, boxName: string, itemID: string, itemName: string, importStatus: string, message: string) => void
-): Promise<any[]> => {
+): Promise<{ duplicates: any[], orphans: any[] }> => {
   const existingItems = await existingData();
   console.log('Data to import:', data);
 
+  const knownBoxIDs = new Set<string>();
   const duplicates = [];
+  const orphans = [];
+
+  // Populate knownBoxIDs from existing items
+  existingItems.forEach(item => {
+    if (item.itemID === 'box_root') {
+      knownBoxIDs.add(item.boxID);
+    }
+  });
+
+  // Populate knownBoxIDs from incoming data
+  data.forEach(item => {
+    if (item.itemID === 'box_root') {
+      knownBoxIDs.add(item.boxID);
+    }
+  });
 
   if (data.length === 0) {
     updateStatus('', '', '', '', 'failure', 'No items to import.');
-    return duplicates;
+    return { duplicates, orphans };
   }
 
   for (const item of data) {
@@ -61,9 +77,16 @@ const handleVersion102 = async (
     const { boxID, boxName, itemID, itemName, location, quantity, note } = parsedItem;
 
     // Check for required fields
-    if (!boxID || !itemID) {
-      console.error('Missing required fields:', parsedItem);
-      updateStatus(boxID || '', boxName || '', itemID || '', itemName || '', 'failure', 'Missing required fields: boxID or itemID.');
+    if (!itemID) {
+      console.error('Missing required field itemID:', parsedItem);
+      updateStatus(boxID || '', boxName || '', itemID || '', itemName || '', 'failure', 'Missing required field: itemID.');
+      continue;
+    }
+
+    // Check if item is an orphan (missing boxID or unknown boxID)
+    if (!boxID || !knownBoxIDs.has(boxID)) {
+      orphans.push(parsedItem);
+      updateStatus(boxID || '', boxName || '', itemID, itemName || '', 'warning', 'Orphaned item detected (missing or unknown boxID)');
       continue;
     }
 
@@ -106,13 +129,14 @@ const handleVersion102 = async (
   }
 
   console.log('Duplicates:', duplicates);
-  return duplicates;
+  console.log('Orphans:', orphans);
+  return { duplicates, orphans };
 };
 
 export const importData = async (
   jsonData: ExportData,
   updateStatus: (boxID: string, boxName: string, itemID: string, itemName: string, importStatus: string, message: string) => void
-): Promise<any[]> => {
+): Promise<{ duplicates: any[], orphans: any[] }> => {
   const { export_metadata, data } = jsonData;
   console.log('Importing data with metadata:', export_metadata);
 
@@ -126,7 +150,7 @@ export const importData = async (
   } catch (error) {
     console.error('Error in importData function:', error);
     updateStatus('', '', '', '', 'failure', `Failed to import data: ${error.message}`);
-    return [];
+    return { duplicates: [], orphans: [] };
   }
 };
 
@@ -191,18 +215,83 @@ export const handleDuplicates = async (
         console.log('Add duplicate result:', result);
 
         if (result && result.data) {
-          updateStatus(newBoxID, boxName, newItemID, itemName, 'success', '✓');
+          updateStatus(boxID, boxName, itemID, itemName, 'success', '✓');
         } else {
           console.error('Failed to add duplicate item to the table:', { newBoxID, newItemID, boxName, itemName, location, quantity, note });
-          updateStatus(newBoxID, boxName, newItemID, itemName, 'failure', 'Failed to add duplicate item to the table');
+          updateStatus(boxID, boxName, itemID, itemName, 'failure', 'Failed to add duplicate item to the table');
         }
       } catch (error) {
         console.error('Error creating duplicate item:', error);
         if (error instanceof Error) {
-          updateStatus(newBoxID, boxName, newItemID, itemName, 'failure', error.message);
+          updateStatus(boxID, boxName, itemID, itemName, 'failure', error.message);
         } else {
-          updateStatus(newBoxID, boxName, newItemID, itemName, 'failure', 'An unknown error occurred');
+          updateStatus(boxID, boxName, itemID, itemName, 'failure', 'An unknown error occurred');
         }
+      }
+    }
+  }
+};
+
+export const handleOrphans = async (
+  orphans: any[],
+  action: 'ignore' | 'import',
+  updateStatus: (boxID: string, boxName: string, itemID: string, itemName: string, importStatus: string, message: string) => void
+) => {
+  if (action === 'ignore') {
+    orphans.forEach(orphan => {
+      const { boxID, boxName, itemID, itemName } = orphan;
+      updateStatus(boxID, boxName, itemID, itemName, 'ignored', 'Orphan ignored');
+    });
+  } else if (action === 'import') {
+    const newBoxID = generateId(6);
+    const boxName = 'Imported Items';
+    const location = `Imported ${new Date().toLocaleDateString()}`;
+
+    try {
+      // Create a new box for orphaned items
+      const newBoxResult = await client.models.Boxes.create({
+        boxID: newBoxID,
+        itemID: 'box_root',
+        boxName,
+        location
+      });
+      console.log('New box created for orphans:', newBoxResult);
+
+      for (const orphan of orphans) {
+        const { boxID: originalBoxID, itemID, itemName, location, quantity, note } = orphan;
+
+        // Create a new item with the imported info and new boxID
+        const newItemID = generateId(20);
+        const result = await client.models.Boxes.create({
+          boxID: newBoxID,
+          itemID: newItemID,
+          boxName: orphan.boxName,
+          itemName,
+          location,
+          quantity,
+          note
+        });
+        console.log('Add orphan result:', result);
+
+        if (result && result.data) {
+          updateStatus(originalBoxID, orphan.boxName, itemID, itemName, 'success', '✓');
+        } else {
+          console.error('Failed to add orphan item to the table:', orphan);
+          updateStatus(originalBoxID, orphan.boxName, itemID, itemName, 'failure', 'Failed to add orphan item to the table');
+        }
+      }
+    } catch (error) {
+      console.error('Error creating new box for orphans or adding orphan items:', error);
+      if (error instanceof Error) {
+        orphans.forEach(orphan => {
+          const { boxID: originalBoxID, itemID, itemName } = orphan;
+          updateStatus(originalBoxID, orphan.boxName, itemID, itemName, 'failure', error.message);
+        });
+      } else {
+        orphans.forEach(orphan => {
+          const { boxID: originalBoxID, itemID, itemName } = orphan;
+          updateStatus(originalBoxID, orphan.boxName, itemID, itemName, 'failure', 'An unknown error occurred');
+        });
       }
     }
   }

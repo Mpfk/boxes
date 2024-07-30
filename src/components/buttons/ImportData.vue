@@ -6,12 +6,11 @@
     </button>
 
     <!-- Modal -->
-    <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
+    <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="importModalLabel">Import Data</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <div class="mb-3">
@@ -26,15 +25,25 @@
             </ul>
           </div>
           <div class="modal-footer">
-            <span v-if="duplicates.length > 0">{{ duplicates.length }} Duplicates Found</span>
-            <button v-if="duplicates.length > 0" class="btn btn-secondary me-2" @click="handleDuplicatesAction('ignore')">Ignore</button>
-            <button v-if="duplicates.length > 0" class="btn btn-warning me-2" @click="handleDuplicatesAction('overwrite')">Overwrite</button>
-            <button v-if="duplicates.length > 0" class="btn btn-primary" @click="handleDuplicatesAction('add')">Duplicate</button>
-            <button v-else type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="isImporting">
-              <span v-if="isImporting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              <span v-if="!isImporting && !importCompleted">Close</span>
-              <span v-if="importCompleted && !hasErrors">Done</span>
-              <span v-if="importCompleted && hasErrors">Close</span>
+            <template v-if="duplicates.length > 0 && !duplicatesHandled">
+              <span>{{ duplicates.length }} Duplicates Found</span>
+              <button class="btn btn-secondary me-2" @click="handleDuplicatesAction('ignore')">Ignore</button>
+              <button class="btn btn-warning me-2" @click="handleDuplicatesAction('overwrite')">Overwrite</button>
+              <button class="btn btn-success" @click="handleDuplicatesAction('add')">Duplicate</button>
+            </template>
+            <template v-if="orphans.length > 0 && (duplicates.length === 0 || duplicatesHandled)">
+              <span>{{ orphans.length }} Items Without Boxes</span>
+              <button class="btn btn-secondary me-2" @click="handleOrphansAction('ignore')">Ignore</button>
+              <button class="btn btn-success" @click="handleOrphansAction('import')">Import</button>
+            </template>
+            <button v-if="isImporting" type="button" class="btn btn-primary" disabled>
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            </button>
+            <button v-else-if="!isImporting && !duplicates.length && !orphans.length" type="button" class="btn btn-primary" data-bs-dismiss="modal">
+              Close
+            </button>
+            <button v-else type="button" class="btn btn-primary" disabled>
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             </button>
           </div>
         </div>
@@ -45,7 +54,7 @@
 
 <script>
 import { ref, onMounted } from 'vue';
-import { importData, handleDuplicates as handleDuplicatesFn } from '../../utils/dataImport';
+import { importData, handleDuplicates as handleDuplicatesFn, handleOrphans as handleOrphansFn } from '../../utils/dataImport';
 
 export default {
   name: 'ImportData',
@@ -57,6 +66,8 @@ export default {
     const hasErrors = ref(false);
     const formFile = ref(null);
     const duplicates = ref([]);
+    const orphans = ref([]);
+    const duplicatesHandled = ref(false);
 
     const handleFileUpload = (event) => {
       const file = event.target.files[0];
@@ -68,12 +79,14 @@ export default {
           const content = e.target.result;
           try {
             const jsonData = JSON.parse(content);
-            duplicates.value = await importData(jsonData, (boxID, boxName, itemID, itemName, importStatus, message) => {
+            const { duplicates: dupItems, orphans: orphanItems } = await importData(jsonData, (boxID, boxName, itemID, itemName, importStatus, message) => {
               importStatusList.value.push({ boxID, boxName, itemID, itemName, importStatus, message });
               if (importStatus === 'failure') {
                 hasErrors.value = true;
               }
             });
+            duplicates.value = dupItems;
+            orphans.value = orphanItems;
             importCompleted.value = true;
           } catch (error) {
             console.error('Error parsing or importing data:', error);
@@ -97,7 +110,21 @@ export default {
         }
       });
       isImporting.value = false;
+      duplicatesHandled.value = true;
       duplicates.value = []; // Clear duplicates list after handling
+    };
+
+    const handleOrphansAction = async (action) => {
+      isImporting.value = true;
+      await handleOrphansFn(orphans.value, action, (boxID, boxName, itemID, itemName, importStatus, message) => {
+        const status = importStatusList.value.find(status => status.boxID === boxID && status.itemID === itemID);
+        if (status) {
+          status.importStatus = importStatus;
+          status.message = message;
+        }
+      });
+      isImporting.value = false;
+      orphans.value = []; // Clear orphans list after handling
     };
 
     const resetForm = () => {
@@ -107,6 +134,8 @@ export default {
       isImporting.value = false;
       hasErrors.value = false;
       duplicates.value = [];
+      orphans.value = [];
+      duplicatesHandled.value = false;
       if (formFile.value) {
         formFile.value.value = '';
       }
@@ -120,13 +149,16 @@ export default {
     return {
       handleFileUpload,
       handleDuplicatesAction,
+      handleOrphansAction,
       importStatusList,
       fileUploaded,
       importCompleted,
       isImporting,
       hasErrors,
       formFile,
-      duplicates
+      duplicates,
+      orphans,
+      duplicatesHandled
     };
   }
 };

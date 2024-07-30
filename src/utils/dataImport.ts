@@ -17,8 +17,8 @@ interface ExportData {
 const existingData = async (): Promise<any[]> => {
   try {
     const data = await client.models.Boxes.list();
-    console.log('Existing data retrieved:', data.items);
-    return data.items || [];
+    console.log('Existing data retrieved:', data);
+    return data.data || []; // Adjust to match the actual structure of the response
   } catch (error) {
     console.error('Error fetching existing data:', error);
     return [];
@@ -36,8 +36,6 @@ const handleVersion102 = async (
     updateStatus('', '', '', '', false, 'No items to import.');
     return;
   }
-
-  const duplicates = [];
 
   for (const item of data) {
     let parsedItem;
@@ -61,11 +59,11 @@ const handleVersion102 = async (
     // Check for duplicates
     const isDuplicate = existingItems.some(existingItem => existingItem.boxID === boxID && existingItem.itemID === itemID);
     if (isDuplicate) {
-      duplicates.push(parsedItem);
       updateStatus(boxID, boxName, itemID, itemName, false, 'Duplicate detected', true);
       continue;
     }
 
+    // Attempt to create item
     try {
       console.log('Attempting to create item:', parsedItem);
       const result = await client.models.Boxes.create({
@@ -94,9 +92,6 @@ const handleVersion102 = async (
       }
     }
   }
-
-  // Do something with the duplicates list if needed
-  console.log('Duplicates:', duplicates);
 };
 
 export const importData = async (

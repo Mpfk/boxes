@@ -2,7 +2,7 @@
   <div>
     <button class="btn btn-primary" @click="handleExport" :disabled="exporting">
       <span v-if="exporting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-      ↓
+      Export Data
     </button>
   </div>
 </template>

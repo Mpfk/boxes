@@ -49,17 +49,17 @@
     <div class="list-group">
       <!-- Boxes & QRs -->
       <div class="list-group-item d-flex align-items-center justify-content-between">
-        <p style="margin: 0">Box List + QR Codes PDF</p>
+        <p style="margin: 0">Box List + QR Codes<br><small class="text-secondary">Generate a PDF of all boxes.</small></p>
         <button class="btn btn-secondary disabled">Coming Soon</button>
       </div>
       <!-- Full Inventory -->
       <div class="list-group-item d-flex align-items-center justify-content-between">
-        <p style="margin: 0">Full Inventory PDF</p>
+        <p style="margin: 0">Full Inventory<br><small class="text-secondary">Generate a PDF of all boxes and their items.</small></p>
         <button class="btn btn-secondary disabled">Coming Soon</button>
       </div>
       <!-- Label Maker CSV -->
       <div class="list-group-item d-flex align-items-center justify-content-between">
-        <p style="margin: 0">Label Maker CSV</p>
+        <p style="margin: 0">Label Maker CSV<br><small class="text-secondary">Generate a CSV file for label maker software.</small></p>
         <button class="btn btn-secondary disabled">Coming Soon</button>
       </div>
     </div>
@@ -69,13 +69,17 @@
     <div class="list-group">
       <!-- Export Data -->
       <div class="list-group-item d-flex align-items-center justify-content-between">
-        <p style="margin: 0">Export Data</p>
+        <p style="margin: 0">Export Data<br><small class="text-secondary">Generate a JSON file of all data.</small></p>
         <ExportButton />
       </div>
       <!-- Import Data -->
       <div class="list-group-item d-flex align-items-center justify-content-between">
-        <p style="margin: 0">Import Data</p>
+        <p style="margin: 0">Import Data<br><small class="text-secondary">Upload a JSON file to import data.</small></p>
         <ImportButton />
+      </div>
+      <div class="list-group-item d-flex align-items-center justify-content-between">
+        <p style="margin: 0" class="text-danger">Delete Data<br><small>Delete all boxes and their items.</small></p>
+        <button class="btn btn-outline-danger disabled">Delete Data</button>
       </div>
     </div>
   </main>

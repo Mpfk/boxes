@@ -16,11 +16,11 @@
           <div class="modal-body">
             <div class="mb-3">
               <label for="formFile" class="form-label">Upload JSON File</label>
-              <input class="form-control" type="file" id="formFile" @change="handleFileUpload" :disabled="fileUploaded" />
+              <input class="form-control" type="file" id="formFile" ref="formFile" @change="handleFileUpload" :disabled="fileUploaded" />
             </div>
             <ul class="list-group mt-3" v-if="importStatus.length > 0">
               <li v-for="(status, index) in importStatus" :key="index" 
-                  :class="['list-group-item', status.success ? 'list-group-item-success' : 'list-group-item-danger']">
+                  :class="['list-group-item', status.success ? 'list-group-item-success' : (status.isWarning ? 'list-group-item-warning' : 'list-group-item-danger')]">
                 {{ status.boxID }} - {{ status.boxName }} - {{ status.itemID }} - {{ status.itemName }}: {{ status.message }}
               </li>
             </ul>
@@ -29,7 +29,8 @@
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" :disabled="isImporting">
               <span v-if="isImporting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
               <span v-if="!isImporting && !importCompleted">Close</span>
-              <span v-if="importCompleted">Done</span>
+              <span v-if="importCompleted && !hasErrors">Done</span>
+              <span v-if="importCompleted && hasErrors">Close</span>
             </button>
           </div>
         </div>
@@ -39,7 +40,7 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { importData } from '../../utils/dataImport';
 
 export default {
@@ -49,6 +50,8 @@ export default {
     const fileUploaded = ref(false);
     const importCompleted = ref(false);
     const isImporting = ref(false);
+    const hasErrors = ref(false);
+    const formFile = ref(null);
 
     const handleFileUpload = (event) => {
       const file = event.target.files[0];
@@ -60,13 +63,17 @@ export default {
           const content = e.target.result;
           try {
             const jsonData = JSON.parse(content);
-            await importData(jsonData, (boxID, boxName, itemID, itemName, success, message) => {
-              importStatus.value.push({ boxID, boxName, itemID, itemName, success, message: success ? 'Imported successfully' : `Error: ${message}` });
+            await importData(jsonData, (boxID, boxName, itemID, itemName, success, message, isWarning) => {
+              importStatus.value.push({ boxID, boxName, itemID, itemName, success, message, isWarning });
+              if (!success) {
+                hasErrors.value = true;
+              }
             });
             importCompleted.value = true;
           } catch (error) {
-            console.error('Error importing data:', error);
+            console.error('Error parsing or importing data:', error);
             alert('Failed to import data.');
+            hasErrors.value = true;
           } finally {
             isImporting.value = false;
           }
@@ -75,12 +82,30 @@ export default {
       }
     };
 
+    const resetForm = () => {
+      importStatus.value = [];
+      fileUploaded.value = false;
+      importCompleted.value = false;
+      isImporting.value = false;
+      hasErrors.value = false;
+      if (formFile.value) {
+        formFile.value.value = '';
+      }
+    };
+
+    onMounted(() => {
+      const modal = document.getElementById('importModal');
+      modal.addEventListener('hidden.bs.modal', resetForm);
+    });
+
     return {
       handleFileUpload,
       importStatus,
       fileUploaded,
       importCompleted,
-      isImporting
+      isImporting,
+      hasErrors,
+      formFile
     };
   }
 };

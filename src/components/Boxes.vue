@@ -1,6 +1,6 @@
 <script setup lang="ts">
   // Imports
-  import { onMounted, ref, inject, computed } from 'vue';
+  import { onMounted, ref, inject, computed, watch } from 'vue';
   import type { Schema } from '../../amplify/data/resource';
   import { generateClient } from 'aws-amplify/data';
   import { useRouter } from 'vue-router';
@@ -56,6 +56,12 @@
       { icon: '+', description: 'New', buttonClass: 'btn-success', onClick: navigateToNewBox },
     ]);
   });
+  // Watch searchTerm and reset list when it becomes empty
+  watch(searchTerm, (newVal) => {
+    if (newVal === '') {
+      listBoxes();
+    }
+  });
   // Computed property for filtered boxes
   const filteredBoxes = computed(() => {
     const flatList: Schema['Boxes']["type"][] = [];
@@ -90,7 +96,7 @@
 </script>
 <template>
   <main>
-    <div class="form-group mt-5">
+    <div class="input-group mt-5">
       <input 
         type="text" 
         class="form-control form-control-lg" 
@@ -98,6 +104,7 @@
         placeholder="🔎 Search Boxes and Items" 
         v-model="searchTerm" 
       />
+      <button v-if="searchTerm" class="btn btn-outline-warning" type="button" @click="() => { searchTerm = ''; listBoxes(); }">X</button>
     </div>
     <div class="mt-5">
       <div class="list-group">

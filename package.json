@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "aws-amplify": "^6.4.3",
+    "bootstrap": "^5.3.3",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3"
   },

@@ -22,11 +22,17 @@ export const deleteData = async (
   const totalItems = items.length;
   let deletedItems = 0;
 
+  if (totalItems === 0) {
+    updateStatus('No items to delete.');
+    return;
+  }
+
   for (const item of items) {
     const { boxID, itemID } = item;
     try {
       console.log('Attempting to delete item:', item);
-      await client.models.Boxes.delete({ boxID, itemID });
+      const result = await client.models.Boxes.delete({ boxID, itemID });
+      console.log('Delete result:', result);
       deletedItems++;
       updateProgress((deletedItems / totalItems) * 100);
     } catch (error) {
@@ -35,5 +41,9 @@ export const deleteData = async (
     }
   }
 
-  updateStatus('All items deleted successfully');
+  if (deletedItems === totalItems) {
+    updateStatus('All items deleted successfully');
+  } else {
+    updateStatus('Some items could not be deleted. Check the console for more details.');
+  }
 };

@@ -6,6 +6,7 @@
   import { useRouter } from 'vue-router';
   import ExportButton from './buttons/ExportData.vue';
   import ImportButton from './buttons/ImportData.vue';
+  import DeleteButton from './buttons/DeleteData.vue';
   import type { Toast } from '../utils/toastStore';
 
   // Interface
@@ -79,7 +80,7 @@
       </div>
       <div class="list-group-item d-flex align-items-center justify-content-between">
         <p style="margin: 0" class="text-danger">Delete Data<br><small>Delete all boxes and their items.</small></p>
-        <button class="btn btn-outline-danger disabled">Delete Data</button>
+        <DeleteButton />
       </div>
     </div>
   </main>

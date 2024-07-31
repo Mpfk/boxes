@@ -203,16 +203,17 @@
     <!-- Item List -->
     <div class="list-group" v-if="!multiMovePrompted && list.length > 0">
       <button
-        class="list-group-item list-group-item-action"
+        class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
         v-for="item in list" 
         :key="item.itemID"
         :class="multiSelected.includes(item.itemID) ? 'list-group-item-warning' : ''"
         @click="multiOn ? multiSelect(item.itemID) : editItem(item.itemID)"
       >
-        <div class="w-100">
-          <span class="fw-bold">{{ item.itemName }}</span>
+        <div class="">
+          <div class="fw-bold w-100">{{ item.itemName }}</div>
+          <small>{{ item.note }}</small>
         </div>
-        <small>{{ item.itemName }}</small>
+        <span v-if="item.quantity > 1" class="badge text-bg-secondary rounded-pill">{{ item.quantity }}</span>
       </button>
     </div>
     <div v-if="list.length === 0" class="text-center border rounded m-5 p-5">

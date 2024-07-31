@@ -199,9 +199,9 @@
   <div>
     <div class="mt-5 mb-3 text-center fw-bold fs-3">{{ boxName }}</div>
     <div class="text-center mb-4">{{ location }}</div>
-    <div class="mt-2 mb-2 text-center fw-bold fs-5">Items</div>
+    <div class="mt-2 mb-2 text-center fw-bold fs-5" v-if="list.length > 0">Items</div>
     <!-- Item List -->
-    <div class="list-group" v-if="!multiMovePrompted">
+    <div class="list-group" v-if="!multiMovePrompted && list.length > 0">
       <button
         class="list-group-item list-group-item-action"
         v-for="item in list" 
@@ -214,6 +214,10 @@
         </div>
         <small>{{ item.itemName }}</small>
       </button>
+    </div>
+    <div v-if="list.length === 0" class="text-center border rounded m-5 p-5">
+      <p>This box is empty...</p>
+      <button class="btn btn-success" @click="addItems">Fill with Items</button>
     </div>
     <!-- Move Items prompt -->
     <div class="mt-5 rounded border p-4" v-if="multiMovePrompted">

@@ -5,6 +5,7 @@
     import ItemForm from './ItemForm.vue';
     import { generateClient } from 'aws-amplify/data';
     import type { Schema } from '../../amplify/data/resource';
+    import confetti from 'canvas-confetti';
 
     // Interfaces
     interface HotBarButton {
@@ -33,22 +34,39 @@
     const itemName = ref('');
     const quantity = ref(1);
     const note = ref('');
-    const isSaveDisabled = ref(true);
     const setHotBarButtons = inject<(buttons: HotBarButton[]) => void>('setHotBarButtons')!;
     const addToast = inject<(options: ToastOptions) => void>('addToast')!;
+    const animate = ref(false);
 
     // Functions
     onMounted(() => {
         boxID.value = route.params.boxID as string;
         setHotBarButtons([
             { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack },
-            { icon: '✓', description: 'Create', buttonClass: 'btn-success', onClick: saveItem },
+            { icon: '✓', description: 'Create', buttonClass: 'btn-secondary', onClick: warnRequires },
         ]);
     });
 
     watch(itemName, (newValue) => {
-        isSaveDisabled.value = !newValue.trim();
+        if(newValue.trim().length > 0) {
+            setHotBarButtons([
+                { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack },
+                { icon: '✓', description: 'Create', buttonClass: 'btn-success', onClick: saveItem },
+            ]);
+        } else {
+            setHotBarButtons([
+                { icon: '←', description: 'Back', buttonClass: 'btn-warning', onClick: goBack },
+                { icon: '✓', description: 'Create', buttonClass: 'btn-secondary', onClick: warnRequires },
+            ]);
+        }
     });
+
+    function warnRequires() {
+        addToast({
+            message: 'Missing required values.',
+            bgClass: 'text-bg-warning',
+        });
+    }
 
     function updateItemName(value: string) {
         itemName.value = value;
@@ -62,6 +80,29 @@
         note.value = value;
     }
 
+    function resetForm() {
+        itemName.value = '';
+        quantity.value = 1;
+        note.value = '';
+        itemName.value = '';
+        quantity.value = 1;
+        note.value = '';
+    }
+
+    function animateNextItem() {
+        animate.value = true;
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#198754', '#157347'],
+        });
+        resetForm();
+        setTimeout(() => {
+            animate.value = false;
+        }, 3500);
+    }
+
     async function saveItem() {
         const itemID = Math.random().toString(36).substring(2, 22); // Generate a random 20-character string
         try {
@@ -73,6 +114,7 @@
                 note: note.value,
             });
             console.log('Item added:', itemName.value, itemID);
+            animateNextItem();
             addToast({
                 message: 'Item added successfully!',
                 bgClass: 'text-bg-success',
@@ -93,8 +135,9 @@
 
 <template>
     <div>
-        <div class="mt-5 mb-3 text-center fw-bold fs-3">New item +</div>
+        <div class="mt-5 mb-3 text-center fw-bold fs-3">Add items +</div>
         <ItemForm 
+            v-if="!animate"
             :initialItemName="itemName" 
             :initialQuantity="quantity" 
             :initialNote="note" 
@@ -104,9 +147,12 @@
                 updateNote(note); 
             }" 
         />
+        <div v-if="animate" class="text-center mt-5 text-success">
+            <div class="fw-bold" style="font-size: 4em;">✓</div>
+            <p>Item added!</p>
+            <p class="mt-5 text-muted">Resetting form...</p>
+        </div>
     </div>
 </template>
 
-<style scoped>
-/* Add any required styles here */
-</style>
+<style scoped></style>

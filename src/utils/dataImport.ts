@@ -36,7 +36,8 @@ const generateId = (length: number): string => {
 
 const handleVersion102 = async (
   data: any[],
-  updateStatus: (boxID: string, boxName: string, itemID: string, itemName: string, importStatus: string, message: string) => void
+  updateStatus: (boxID: string, boxName: string, itemID: string, itemName: string, importStatus: string, message: string) => void,
+  updateProgress: (progress: number) => void
 ): Promise<{ duplicates: any[], orphans: any[] }> => {
   const existingItems = await existingData();
   console.log('Data to import:', data);
@@ -44,6 +45,8 @@ const handleVersion102 = async (
   const knownBoxIDs = new Set<string>();
   const duplicates = [];
   const orphans = [];
+  const totalItems = data.length;
+  let processedItems = 0;
 
   // Populate knownBoxIDs from existing items
   existingItems.forEach(item => {
@@ -59,7 +62,7 @@ const handleVersion102 = async (
     }
   });
 
-  if (data.length === 0) {
+  if (totalItems === 0) {
     updateStatus('', '', '', '', 'failure', 'No items to import.');
     return { duplicates, orphans };
   }
@@ -87,6 +90,8 @@ const handleVersion102 = async (
     if (!boxID || !knownBoxIDs.has(boxID)) {
       orphans.push(parsedItem);
       updateStatus(boxID || '', boxName || '', itemID, itemName || '', 'warning', 'Orphaned item detected (missing or unknown boxID)');
+      processedItems++;
+      updateProgress((processedItems / totalItems) * 100);
       continue;
     }
 
@@ -95,6 +100,8 @@ const handleVersion102 = async (
     if (isDuplicate) {
       duplicates.push(parsedItem);
       updateStatus(boxID, boxName, itemID, itemName, 'warning', 'Duplicate detected');
+      processedItems++;
+      updateProgress((processedItems / totalItems) * 100);
       continue;
     }
 
@@ -126,6 +133,8 @@ const handleVersion102 = async (
         updateStatus(boxID, boxName, itemID, itemName, 'failure', 'An unknown error occurred');
       }
     }
+    processedItems++;
+    updateProgress((processedItems / totalItems) * 100);
   }
 
   console.log('Duplicates:', duplicates);
@@ -135,7 +144,8 @@ const handleVersion102 = async (
 
 export const importData = async (
   jsonData: ExportData,
-  updateStatus: (boxID: string, boxName: string, itemID: string, itemName: string, importStatus: string, message: string) => void
+  updateStatus: (boxID: string, boxName: string, itemID: string, itemName: string, importStatus: string, message: string) => void,
+  updateProgress: (progress: number) => void
 ): Promise<{ duplicates: any[], orphans: any[] }> => {
   const { export_metadata, data } = jsonData;
   console.log('Importing data with metadata:', export_metadata);
@@ -143,7 +153,7 @@ export const importData = async (
   try {
     switch (export_metadata.export_version) {
       case '1-0-2':
-        return await handleVersion102(data, updateStatus);
+        return await handleVersion102(data, updateStatus, updateProgress);
       default:
         throw new Error(`Unsupported export version: ${export_metadata.export_version}`);
     }
@@ -157,29 +167,26 @@ export const importData = async (
 export const handleDuplicates = async (
   duplicates: any[],
   action: 'ignore' | 'overwrite' | 'add',
-  updateStatus: (boxID: string, boxName: string, itemID: string, itemName: string, importStatus: string, message: string) => void
+  updateStatus: (boxID: string, boxName: string, itemID: string, itemName: string, importStatus: string, message: string) => void,
+  updateProgress: (progress: number) => void
 ) => {
+  const totalItems = duplicates.length;
+  let processedItems = 0;
+
   if (action === 'ignore') {
     duplicates.forEach(duplicate => {
       const { boxID, boxName, itemID, itemName } = duplicate;
       updateStatus(boxID, boxName, itemID, itemName, 'ignored', 'Duplicate ignored');
+      processedItems++;
+      updateProgress((processedItems / totalItems) * 100);
     });
   } else if (action === 'overwrite') {
     for (const duplicate of duplicates) {
       const { boxID, itemID, boxName, itemName, location, quantity, note } = duplicate;
       try {
         console.log('Attempting to update item:', { boxID, itemID, boxName, itemName, location, quantity, note });
-
-        // Fetch the existing item data before update
-        const existingItem = await client.models.Boxes.get({ boxID, itemID });
-        console.log('Existing item before update:', existingItem);
-
         const result = await client.models.Boxes.update({ boxID, itemID, boxName, itemName, location, quantity, note });
         console.log('Update result:', result);
-
-        // Fetch the updated item data after update
-        const updatedItem = await client.models.Boxes.get({ boxID, itemID });
-        console.log('Updated item after update:', updatedItem);
 
         if (result && result.data) {
           updateStatus(boxID, boxName, itemID, itemName, 'success', '✓');
@@ -195,6 +202,8 @@ export const handleDuplicates = async (
           updateStatus(boxID, boxName, itemID, itemName, 'failure', 'An unknown error occurred');
         }
       }
+      processedItems++;
+      updateProgress((processedItems / totalItems) * 100);
     }
   } else if (action === 'add') {
     const newBoxIDs = new Map<string, string>();
@@ -215,19 +224,21 @@ export const handleDuplicates = async (
         console.log('Add duplicate result:', result);
 
         if (result && result.data) {
-          updateStatus(boxID, boxName, itemID, itemName, 'success', '✓');
+          updateStatus(newBoxID, boxName, newItemID, itemName, 'success', '✓');
         } else {
           console.error('Failed to add duplicate item to the table:', { newBoxID, newItemID, boxName, itemName, location, quantity, note });
-          updateStatus(boxID, boxName, itemID, itemName, 'failure', 'Failed to add duplicate item to the table');
+          updateStatus(newBoxID, boxName, newItemID, itemName, 'failure', 'Failed to add duplicate item to the table');
         }
       } catch (error) {
         console.error('Error creating duplicate item:', error);
         if (error instanceof Error) {
-          updateStatus(boxID, boxName, itemID, itemName, 'failure', error.message);
+          updateStatus(newBoxID, boxName, newItemID, itemName, 'failure', error.message);
         } else {
-          updateStatus(boxID, boxName, itemID, itemName, 'failure', 'An unknown error occurred');
+          updateStatus(newBoxID, boxName, newItemID, itemName, 'failure', 'An unknown error occurred');
         }
       }
+      processedItems++;
+      updateProgress((processedItems / totalItems) * 100);
     }
   }
 };
@@ -235,12 +246,18 @@ export const handleDuplicates = async (
 export const handleOrphans = async (
   orphans: any[],
   action: 'ignore' | 'import',
-  updateStatus: (boxID: string, boxName: string, itemID: string, itemName: string, importStatus: string, message: string) => void
+  updateStatus: (boxID: string, boxName: string, itemID: string, itemName: string, importStatus: string, message: string) => void,
+  updateProgress: (progress: number) => void
 ) => {
+  const totalItems = orphans.length;
+  let processedItems = 0;
+
   if (action === 'ignore') {
     orphans.forEach(orphan => {
       const { boxID, boxName, itemID, itemName } = orphan;
       updateStatus(boxID, boxName, itemID, itemName, 'ignored', 'Orphan ignored');
+      processedItems++;
+      updateProgress((processedItems / totalItems) * 100);
     });
   } else if (action === 'import') {
     const newBoxID = generateId(6);
@@ -279,6 +296,8 @@ export const handleOrphans = async (
           console.error('Failed to add orphan item to the table:', orphan);
           updateStatus(originalBoxID, orphan.boxName, itemID, itemName, 'failure', 'Failed to add orphan item to the table');
         }
+        processedItems++;
+        updateProgress((processedItems / totalItems) * 100);
       }
     } catch (error) {
       console.error('Error creating new box for orphans or adding orphan items:', error);

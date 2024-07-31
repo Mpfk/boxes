@@ -11,11 +11,15 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="importModalLabel">Import Data</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <div class="mb-3">
+            <div v-if="!fileUploaded" class="mb-3">
               <label for="formFile" class="form-label">Upload JSON File</label>
               <input class="form-control" type="file" id="formFile" ref="formFile" @change="handleFileUpload" :disabled="fileUploaded" />
+            </div>
+            <div class="progress" v-else>
+              <div class="progress-bar" role="progressbar" :style="{ width: progress + '%' }" :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
             <ul class="list-group mt-3" v-if="importStatusList.length > 0">
               <li v-for="(status, index) in importStatusList" :key="index" 
@@ -29,12 +33,12 @@
               <span>{{ duplicates.length }} Duplicates Found</span>
               <button class="btn btn-secondary me-2" @click="handleDuplicatesAction('ignore')">Ignore</button>
               <button class="btn btn-warning me-2" @click="handleDuplicatesAction('overwrite')">Overwrite</button>
-              <button class="btn btn-success" @click="handleDuplicatesAction('add')">Duplicate</button>
+              <button class="btn btn-primary" @click="handleDuplicatesAction('add')">Duplicate</button>
             </template>
             <template v-if="orphans.length > 0 && (duplicates.length === 0 || duplicatesHandled)">
-              <span>{{ orphans.length }} Items Without Boxes</span>
+              <span>{{ orphans.length }} Orphans Found</span>
               <button class="btn btn-secondary me-2" @click="handleOrphansAction('ignore')">Ignore</button>
-              <button class="btn btn-success" @click="handleOrphansAction('import')">Import</button>
+              <button class="btn btn-primary" @click="handleOrphansAction('import')">Import</button>
             </template>
             <button v-if="isImporting" type="button" class="btn btn-primary" disabled>
               <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -68,6 +72,7 @@ export default {
     const duplicates = ref([]);
     const orphans = ref([]);
     const duplicatesHandled = ref(false);
+    const progress = ref(0);
 
     const handleFileUpload = (event) => {
       const file = event.target.files[0];
@@ -79,12 +84,17 @@ export default {
           const content = e.target.result;
           try {
             const jsonData = JSON.parse(content);
-            const { duplicates: dupItems, orphans: orphanItems } = await importData(jsonData, (boxID, boxName, itemID, itemName, importStatus, message) => {
-              importStatusList.value.push({ boxID, boxName, itemID, itemName, importStatus, message });
-              if (importStatus === 'failure') {
-                hasErrors.value = true;
+            const { duplicates: dupItems, orphans: orphanItems } = await importData(jsonData, 
+              (boxID, boxName, itemID, itemName, importStatus, message) => {
+                importStatusList.value.push({ boxID, boxName, itemID, itemName, importStatus, message });
+                if (importStatus === 'failure') {
+                  hasErrors.value = true;
+                }
+              },
+              (newProgress) => {
+                progress.value = newProgress;
               }
-            });
+            );
             duplicates.value = dupItems;
             orphans.value = orphanItems;
             importCompleted.value = true;
@@ -102,13 +112,18 @@ export default {
 
     const handleDuplicatesAction = async (action) => {
       isImporting.value = true;
-      await handleDuplicatesFn(duplicates.value, action, (boxID, boxName, itemID, itemName, importStatus, message) => {
-        const status = importStatusList.value.find(status => status.boxID === boxID && status.itemID === itemID);
-        if (status) {
-          status.importStatus = importStatus;
-          status.message = message;
+      await handleDuplicatesFn(duplicates.value, action, 
+        (boxID, boxName, itemID, itemName, importStatus, message) => {
+          const status = importStatusList.value.find(status => status.boxID === boxID && status.itemID === itemID);
+          if (status) {
+            status.importStatus = importStatus;
+            status.message = message;
+          }
+        },
+        (newProgress) => {
+          progress.value = newProgress;
         }
-      });
+      );
       isImporting.value = false;
       duplicatesHandled.value = true;
       duplicates.value = []; // Clear duplicates list after handling
@@ -116,13 +131,18 @@ export default {
 
     const handleOrphansAction = async (action) => {
       isImporting.value = true;
-      await handleOrphansFn(orphans.value, action, (boxID, boxName, itemID, itemName, importStatus, message) => {
-        const status = importStatusList.value.find(status => status.boxID === boxID && status.itemID === itemID);
-        if (status) {
-          status.importStatus = importStatus;
-          status.message = message;
+      await handleOrphansFn(orphans.value, action, 
+        (boxID, boxName, itemID, itemName, importStatus, message) => {
+          const status = importStatusList.value.find(status => status.boxID === boxID && status.itemID === itemID);
+          if (status) {
+            status.importStatus = importStatus;
+            status.message = message;
+          }
+        },
+        (newProgress) => {
+          progress.value = newProgress;
         }
-      });
+      );
       isImporting.value = false;
       orphans.value = []; // Clear orphans list after handling
     };
@@ -136,6 +156,7 @@ export default {
       duplicates.value = [];
       orphans.value = [];
       duplicatesHandled.value = false;
+      progress.value = 0;
       if (formFile.value) {
         formFile.value.value = '';
       }
@@ -158,7 +179,8 @@ export default {
       formFile,
       duplicates,
       orphans,
-      duplicatesHandled
+      duplicatesHandled,
+      progress
     };
   }
 };

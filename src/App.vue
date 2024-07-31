@@ -28,7 +28,7 @@ provide('addToast', toastStore.addToast);
     <authenticator>
       <template v-slot="{ signOut }">
         <Navbar/>
-        <div class="container-fluid pt-5">
+        <div class="container-fluid" style="margin-top: 5em; margin-bottom: 6em;">
           <div class="row">
             <div class="col-md-3">
               <!-- Spacer -->

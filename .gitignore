@@ -32,3 +32,8 @@ coverage
 # AWS Amplify
 .amplify/*
 amplify_outputs.json
+
+# amplify
+.amplify
+amplify_outputs*
+amplifyconfiguration*

@@ -15,7 +15,7 @@
           <div class="modal-body">
             <p v-if="!isDeleting && !statusMessage">Are you sure you want to delete all of your boxes and their contents? This action cannot be undone.</p>
             <div class="alert alert-info mt-3 pt-2 pb-2" v-if="!isDeleting && !statusMessage">
-                  <p class="p-0 m-0"><small><strong>Consider making a backup first!</strong><br>Cancel and choose <code>Export Data</code>.</small></p>
+              <p class="p-0 m-0"><small><strong>Consider making a backup first!</strong><br>Cancel and choose <code>Export Data</code>.</small></p>
             </div>
             <p v-if="!isDeleting && !statusMessage">Type <code>Delete all data</code> to confirm.</p>
             <div class="mb-3" v-if="!isDeleting && !statusMessage">

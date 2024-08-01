@@ -1,11 +1,18 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 
 const schema = a.schema({
-  Todo: a
+  Boxes: a
     .model({
-      content: a.string(),
+      boxID: a.id().required(),
+      itemID: a.string().required(),
+      boxName: a.string(),
+      itemName: a.string(),
+      location: a.string(),
+      quantity: a.float(),
+      note: a.string(),
     })
-    .authorization((allow) => [allow.guest()]),
+    .identifier(['boxID', 'itemID'])
+    .authorization((allow) => [allow.publicApiKey()])
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -13,6 +20,10 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: 'iam',
+    defaultAuthorizationMode: "apiKey",
+    // API Key is used for a.allow.public() rules
+    apiKeyAuthorizationMode: {
+      expiresInDays: 30,
+    },
   },
 });

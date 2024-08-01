@@ -1,10 +1,5 @@
-import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
+import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 
-/*== STEP 1 ===============================================================
-The section below creates a Boxes database table with a "boxID" field. The
-authorization rule below specifies that any user authenticated via an API key
-can "create", "read", "update", and "delete" any "Boxes" records.
-=========================================================================*/
 const schema = a.schema({
   Boxes: a
     .model({

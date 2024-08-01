@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import CircleButton from "@/components/CircleButton.vue";
+import CircleButton from "@/components/buttons/CircleButton.vue";
 
 export default {
     name: 'Navbar',

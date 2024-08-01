@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import CircleButton from './CircleButton.vue';
+import CircleButton from './buttons/CircleButton.vue';
 
 interface HotBarButton {
   icon: string;

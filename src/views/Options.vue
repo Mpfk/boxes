@@ -1,13 +1,10 @@
 <script setup lang="ts">
   // Imports
-  import { onMounted, ref, inject, computed } from 'vue';
-  import type { Schema } from '../../amplify/data/resource';
-  import { generateClient } from 'aws-amplify/data';
+  import { onMounted, inject } from 'vue';
   import { useRouter } from 'vue-router';
   import ExportButton from '../components/buttons/ExportData.vue';
   import ImportButton from '../components/buttons/ImportData.vue';
   import DeleteButton from '../components/buttons/DeleteData.vue';
-  import type { Toast } from '../utils/toastStore';
 
   // Interface
   interface HotBarButton {
@@ -16,17 +13,10 @@
     buttonClass: string;
     onClick: () => void;
   }
-  interface ToastOptions {
-    message: string;
-    bgClass: string;
-  }
 
   // Vars
-  const client = generateClient<Schema>();
   const router = useRouter();
   const setHotBarButtons = inject<(buttons: HotBarButton[]) => void>('setHotBarButtons')!;
-  const addToast = inject<(options: ToastOptions) => void>('addToast')!;
-
 
   // Functions
   onMounted(async () => {

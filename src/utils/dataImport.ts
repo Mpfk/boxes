@@ -14,7 +14,7 @@ interface ExportData {
   data: any[];
 }
 
-const existingData = async (): Promise<any[]> => {
+const existingData = async (): Promise<Schema['Boxes']["type"][]> => {
   try {
     const data = await client.models.Boxes.list();
     console.log('Existing data retrieved:', data);
@@ -43,8 +43,8 @@ const handleVersion102 = async (
   console.log('Data to import:', data);
 
   const knownBoxIDs = new Set<string>();
-  const duplicates = [];
-  const orphans = [];
+  const duplicates: any[] = [];
+  const orphans: any[] = [];
   const totalItems = data.length;
   let processedItems = 0;
 
@@ -159,7 +159,7 @@ export const importData = async (
     }
   } catch (error) {
     console.error('Error in importData function:', error);
-    updateStatus('', '', '', '', 'failure', `Failed to import data: ${error.message}`);
+    updateStatus('', '', '', '', 'failure', `Failed to import data: ${(error as Error).message}`);
     return { duplicates: [], orphans: [] };
   }
 };

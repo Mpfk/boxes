@@ -213,7 +213,7 @@
           <div class="fw-bold w-100">{{ item.itemName }}</div>
           <small>{{ item.note }}</small>
         </div>
-        <span v-if="item.quantity > 1" class="badge text-bg-secondary rounded-pill">{{ item.quantity }}</span>
+        <span v-if="(item.quantity ?? 0) > 1" class="badge text-bg-secondary rounded-pill">{{ item.quantity }}</span>
       </button>
     </div>
     <div v-if="list.length === 0" class="text-center border rounded m-5 p-5">

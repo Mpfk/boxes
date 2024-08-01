@@ -3,16 +3,16 @@ import type { Schema } from '../../amplify/data/resource';
 
 const client = generateClient<Schema>();
 
-const listAllItems = async (): Promise<any[]> => {
-  let allItems = [];
-  let nextToken = null;
+const listAllItems = async (): Promise<Schema['Boxes']["type"][]> => {
+  let allItems: Schema['Boxes']["type"][] = [];
+  let nextToken: string | null = null;
 
   try {
     do {
-      const data = await client.models.Boxes.list({ nextToken });
+      const data: { data?: Schema['Boxes']["type"][]; nextToken?: string | null } = await client.models.Boxes.list({ nextToken });
       console.log('Existing data retrieved:', data);
       allItems = allItems.concat(data.data || []);
-      nextToken = data.nextToken;
+      nextToken = data.nextToken || null;
     } while (nextToken);
 
     return allItems;

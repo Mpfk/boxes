@@ -4,9 +4,9 @@
   import type { Schema } from '../../amplify/data/resource';
   import { generateClient } from 'aws-amplify/data';
   import { useRouter } from 'vue-router';
-  import ExportButton from './buttons/ExportData.vue';
-  import ImportButton from './buttons/ImportData.vue';
-  import DeleteButton from './buttons/DeleteData.vue';
+  import ExportButton from '../components/buttons/ExportData.vue';
+  import ImportButton from '../components/buttons/ImportData.vue';
+  import DeleteButton from '../components/buttons/DeleteData.vue';
   import type { Toast } from '../utils/toastStore';
 
   // Interface
@@ -38,8 +38,6 @@
   function returnHome() {
     router.push('/');
   }
-
-
 </script>
 
 <template>

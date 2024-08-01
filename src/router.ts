@@ -10,7 +10,7 @@ const routes = [
   },
   { 
     path: '/options', 
-    component: () => import('./components/Options.vue') 
+    component: () => import('./views/Options.vue') 
   },
   { 
     path: '/box/new', 

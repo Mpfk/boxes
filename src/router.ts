@@ -29,7 +29,7 @@ const routes = [
   },
   { 
     path: '/box/:boxID/fill', 
-    component: () => import('./components/ItemNew.vue'), 
+    component: () => import('./views/ItemNew.vue'), 
     props: true 
   },
   { 

@@ -19,7 +19,7 @@ const routes = [
   },
   { 
     path: '/box/:boxID', 
-    component: () => import('./components/BoxDetails.vue'), 
+    component: () => import('./views/BoxDetails.vue'), 
     props: true 
   },
   { 

@@ -3,7 +3,7 @@
   import { useRoute, useRouter } from 'vue-router';
   import { generateClient } from 'aws-amplify/data';
   import type { Schema } from '../../amplify/data/resource';
-  import ItemForm from './ItemForm.vue';
+  import ItemForm from '../components/ItemForm.vue';
   // Interfaces
   interface HotBarButton {
     icon: string;

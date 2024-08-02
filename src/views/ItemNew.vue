@@ -2,7 +2,7 @@
     // Imports
     import { ref, onMounted, watch, inject } from 'vue';
     import { useRoute, useRouter } from 'vue-router';
-    import ItemForm from './ItemForm.vue';
+    import ItemForm from '../components/ItemForm.vue';
     import { generateClient } from 'aws-amplify/data';
     import type { Schema } from '../../amplify/data/resource';
     import confetti from 'canvas-confetti';

@@ -3,7 +3,7 @@
   import { useRouter } from 'vue-router';
   import { generateClient } from 'aws-amplify/data';
   import type { Schema } from '../../amplify/data/resource';
-  import BoxForm from './BoxForm.vue';
+  import BoxForm from '../components/BoxForm.vue';
   import type { Toast } from '../utils/toastStore'; // Import the Toast type
 
   // Define the type for HotBarButton

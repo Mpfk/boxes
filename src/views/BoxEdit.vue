@@ -4,7 +4,7 @@
   import { useRoute, useRouter } from 'vue-router';
   import { generateClient } from 'aws-amplify/data';
   import type { Schema } from '../../amplify/data/resource';
-  import BoxForm from './BoxForm.vue';
+  import BoxForm from '../components/BoxForm.vue';
 
   // Interfaces
   interface BoxItem {

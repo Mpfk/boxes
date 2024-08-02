@@ -1,6 +1,6 @@
 // Imports
 import { createRouter, createWebHistory } from 'vue-router';
-const Boxes = () => import('./components/Boxes.vue');
+const Boxes = () => import('./views/Boxes.vue');
 const NotFound = () => import('./views/NotFound.vue');
 
 // Routes

@@ -14,7 +14,7 @@ const routes = [
   },
   { 
     path: '/box/new', 
-    component: () => import('./components/BoxNew.vue'), 
+    component: () => import('./views/BoxNew.vue'), 
     props: true 
   },
   { 
@@ -24,7 +24,7 @@ const routes = [
   },
   { 
     path: '/box/:boxID/edit', 
-    component: () => import('./components/BoxEdit.vue'), 
+    component: () => import('./views/BoxEdit.vue'), 
     props: true 
   },
   { 
@@ -34,7 +34,7 @@ const routes = [
   },
   { 
     path: '/box/:boxID/item/:itemID/edit', 
-    component: () => import('./components/ItemEdit.vue'), 
+    component: () => import('./views/ItemEdit.vue'), 
     props: true 
   },
   { 

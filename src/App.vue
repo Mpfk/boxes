@@ -34,7 +34,9 @@ provide('addToast', toastStore.addToast);
               <!-- Spacer -->
             </div>
             <div class="col-12 col-md-6">
-              <router-view></router-view>
+              <keep-alive>
+                <router-view></router-view>
+              </keep-alive>
             </div>
             <div class="col-md-3">
               <!-- Spacer -->

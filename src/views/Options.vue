@@ -2,6 +2,7 @@
   // Imports
   import { onMounted, inject } from 'vue';
   import { useRouter } from 'vue-router';
+  import GenerateLabels from '../components/buttons/GenerateLabels.vue';
   import ExportButton from '../components/buttons/ExportData.vue';
   import ImportButton from '../components/buttons/ImportData.vue';
   import DeleteButton from '../components/buttons/DeleteData.vue';
@@ -49,7 +50,7 @@
       <!-- Label Maker CSV -->
       <div class="list-group-item d-flex align-items-center justify-content-between">
         <p v-once style="margin: 0">Label Maker CSV<br><small class="text-secondary">Generate a CSV file for label maker software.</small></p>
-        <button class="btn btn-secondary disabled">Coming Soon</button>
+        <GenerateLabels />
       </div>
     </div>
 
